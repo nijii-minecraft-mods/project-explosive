@@ -11,11 +11,9 @@
 Благодаря настроенному GitHub Actions CI/CD релиз всегда доступен по постоянной статической ссылке, которая не меняется при выходе новых версий:
 
 * **Прямая ссылка на последний JAR-файл:**  
-  `https://github.com/<OWNER>/<REPO>/releases/latest/download/project-explosive-fabric.jar`
+  `https://github.com/perdub/project-explosive/releases/latest/download/project-explosive-fabric.jar`
 * **Страница последнего релиза:**  
-  `https://github.com/<OWNER>/<REPO>/releases/latest`
-
-*(Замените `<OWNER>/<REPO>` на адрес вашего репозитория на GitHub)*
+  `https://github.com/perdub/project-explosive/releases/latest`
 
 ---
 
