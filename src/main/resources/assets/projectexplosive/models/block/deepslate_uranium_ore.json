@@ -1,0 +1,7 @@
+{
+  "parent": "projectexplosive:block/ore_overlay",
+  "textures": {
+    "base": "minecraft:block/deepslate",
+    "overlay": "projectexplosive:block/deepslate_uranium_ore_overlay"
+  }
+}

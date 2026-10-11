@@ -1,0 +1,4124 @@
+{
+ "format": "projectexplosive.vfx",
+ "version": 1,
+ "name": "nuclear_default",
+ "globals": {
+  "duration": 5400,
+  "fadeTicks": 1800,
+  "riseSpeed": 13,
+  "maxHeight": 300,
+  "capScaleMin": 0.24,
+  "capRiseFrac": 0.75,
+  "stemTop": {
+   "b": -4,
+   "s": -27,
+   "d": "cap"
+  },
+  "wind": [
+   0,
+   0
+  ],
+  "variation": 0.3,
+  "variantSeed": 0,
+  "terrainReach": -1,
+  "clipTerrain": true,
+  "maxParticles": 36000,
+  "riseCurve": [
+   [
+    0,
+    0
+   ],
+   [
+    400,
+    260
+   ],
+   [
+    480,
+    300
+   ],
+   [
+    600,
+    332
+   ],
+   [
+    800,
+    360
+   ],
+   [
+    1200,
+    390
+   ],
+   [
+    2000,
+    420
+   ],
+   [
+    3200,
+    445
+   ],
+   [
+    5400,
+    470
+   ]
+  ]
+ },
+ "layers": [
+  {
+   "name": "Chapeau — coeur dense",
+   "enabled": true,
+   "particle": "mushroom_cloud_cap",
+   "anchor": "cloud",
+   "offset": {
+    "x": {
+     "b": 0,
+     "s": 0.07,
+     "d": "cloud"
+    },
+    "y": {
+     "b": 0
+    },
+    "z": {
+     "b": 0,
+     "s": 0.035,
+     "d": "cloud"
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 0,
+     "s": 73.2,
+     "d": "cap"
+    },
+    "ry": {
+     "b": 0,
+     "s": 32,
+     "d": "cap"
+    },
+    "rz": {
+     "b": 0,
+     "s": 68.4,
+     "d": "cap"
+    },
+    "underside": {
+     "b": 0.55
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 4
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": -1,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.48
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.13,
+     "cells": 4.2,
+     "octaves": 2,
+     "seed": 21,
+     "animate": 0.3
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0.65
+    ],
+    [
+     0.0385,
+     1
+    ],
+    [
+     0.2648,
+     1
+    ],
+    [
+     0.3852,
+     0.75
+    ],
+    [
+     0.4815,
+     0.6
+    ],
+    [
+     0.75,
+     0.3
+    ],
+    [
+     1,
+     0.12
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.2648,
+     1
+    ],
+    [
+     1,
+     1.5
+    ]
+   ]
+  },
+  {
+   "name": "Chapeau — couronne bouillonnante",
+   "enabled": true,
+   "particle": "mushroom_cloud_cap",
+   "anchor": "cloud",
+   "offset": {
+    "x": {
+     "b": 0,
+     "s": 0.07,
+     "d": "cloud"
+    },
+    "y": {
+     "b": 0,
+     "s": 15,
+     "d": "cap"
+    },
+    "z": {
+     "b": 0,
+     "s": 0.035,
+     "d": "cloud"
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 0,
+     "s": 90,
+     "d": "cap"
+    },
+    "ry": {
+     "b": 0,
+     "s": 41,
+     "d": "cap"
+    },
+    "rz": {
+     "b": 0,
+     "s": 82.8,
+     "d": "cap"
+    },
+    "underside": {
+     "b": 0.45
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 6
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": -1,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.3
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "cells",
+     "count": 9,
+     "tighten": 0.2,
+     "spread": 0.18,
+     "seed": 6
+    },
+    {
+     "type": "lumps",
+     "amp": 0.18,
+     "cells": 3.4,
+     "octaves": 2,
+     "seed": 4,
+     "animate": 0.25
+    },
+    {
+     "type": "droop",
+     "k": 0.0009
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0.65
+    ],
+    [
+     0.0385,
+     1
+    ],
+    [
+     0.2648,
+     1
+    ],
+    [
+     0.3852,
+     0.75
+    ],
+    [
+     0.4815,
+     0.6
+    ],
+    [
+     0.75,
+     0.3
+    ],
+    [
+     1,
+     0.12
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.2648,
+     1
+    ],
+    [
+     1,
+     1.5
+    ]
+   ]
+  },
+  {
+   "name": "Chapeau — bourrelet retombant",
+   "enabled": true,
+   "particle": "mushroom_cloud_cap",
+   "anchor": "cloud",
+   "offset": {
+    "x": {
+     "b": 0,
+     "s": 0.07,
+     "d": "cloud"
+    },
+    "y": {
+     "b": 0,
+     "s": -10,
+     "d": "cap"
+    },
+    "z": {
+     "b": 0,
+     "s": 0.035,
+     "d": "cloud"
+    }
+   },
+   "shape": {
+    "type": "torus",
+    "R": {
+     "b": 0,
+     "s": 68.4,
+     "d": "cap"
+    },
+    "tube": {
+     "b": 0,
+     "s": 20,
+     "d": "cap"
+    },
+    "squash": {
+     "b": 0.78
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 3
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": -1,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": -0.12
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.23,
+     "cells": 4.2,
+     "octaves": 2,
+     "seed": 7,
+     "animate": 0.3
+    },
+    {
+     "type": "bulge",
+     "amp": 0.06,
+     "lobes": 7
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0.65
+    ],
+    [
+     0.0385,
+     1
+    ],
+    [
+     0.2648,
+     1
+    ],
+    [
+     0.3852,
+     0.75
+    ],
+    [
+     0.4815,
+     0.6
+    ],
+    [
+     0.75,
+     0.3
+    ],
+    [
+     1,
+     0.12
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.2648,
+     1
+    ],
+    [
+     1,
+     1.5
+    ]
+   ]
+  },
+  {
+   "name": "Chapeau — ombre sous le bourrelet",
+   "enabled": true,
+   "particle": "smoke2",
+   "anchor": "cloud",
+   "offset": {
+    "x": {
+     "b": 0,
+     "s": 0.07,
+     "d": "cloud"
+    },
+    "y": {
+     "b": 0,
+     "s": -21,
+     "d": "cap"
+    },
+    "z": {
+     "b": 0,
+     "s": 0.035,
+     "d": "cloud"
+    }
+   },
+   "shape": {
+    "type": "disc",
+    "r": {
+     "b": 0,
+     "s": 67.2,
+     "d": "cap"
+    },
+    "inner": {
+     "b": 0,
+     "s": 16.8,
+     "d": "cap"
+    },
+    "thickness": {
+     "b": 0,
+     "s": 7,
+     "d": "cap"
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 3
+   },
+   "every": 1,
+   "startTick": 160,
+   "endTick": -1,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.08
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.12,
+     "cells": 4.2,
+     "octaves": 2,
+     "seed": 5,
+     "animate": 0.3
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0.65
+    ],
+    [
+     0.0385,
+     1
+    ],
+    [
+     0.2648,
+     1
+    ],
+    [
+     0.3852,
+     0.75
+    ],
+    [
+     0.4815,
+     0.6
+    ],
+    [
+     0.75,
+     0.3
+    ],
+    [
+     1,
+     0.12
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.2648,
+     1
+    ],
+    [
+     1,
+     1.5
+    ]
+   ]
+  },
+  {
+   "name": "Col — raccord evase",
+   "enabled": true,
+   "particle": "mushroom_cloud_cap",
+   "anchor": "cloud",
+   "offset": {
+    "x": {
+     "b": 0,
+     "s": 0.07,
+     "d": "cloud"
+    },
+    "y": {
+     "b": -6,
+     "s": -28,
+     "d": "cap"
+    },
+    "z": {
+     "b": 0,
+     "s": 0.035,
+     "d": "cloud"
+    }
+   },
+   "shape": {
+    "type": "cone",
+    "r0": {
+     "b": 0,
+     "s": 11,
+     "d": "cap"
+    },
+    "r1": {
+     "b": 0,
+     "s": 29,
+     "d": "cap"
+    },
+    "height": {
+     "b": 8,
+     "s": 32,
+     "d": "cap"
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 2
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": -1,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.5
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.13,
+     "cells": 4.2,
+     "octaves": 2,
+     "seed": 13,
+     "animate": 0.3
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0058,
+     0
+    ],
+    [
+     0.0313,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.3707,
+     0.45
+    ],
+    [
+     0.4815,
+     0.3
+    ],
+    [
+     0.65,
+     0.1
+    ],
+    [
+     0.8,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Colonne — aspiration tourbillonnante",
+   "enabled": true,
+   "particle": "mushroom_cloud_cap",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "profile",
+    "height": {
+     "b": 0,
+     "s": 1,
+     "d": "stem",
+     "min": 1
+    },
+    "radius": {
+     "b": 28
+    },
+    "points": [
+     [
+      0,
+      1.65
+     ],
+     [
+      0.12,
+      1.12
+     ],
+     [
+      0.35,
+      0.8
+     ],
+     [
+      0.58,
+      0.9
+     ],
+     [
+      0.8,
+      1.05
+     ],
+     [
+      1,
+      1.4
+     ]
+    ],
+    "fill": "volume"
+   },
+   "count": {
+    "b": 8
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": -1,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.65
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "swirl",
+     "turns": 0.22,
+     "speed": 0.022
+    },
+    {
+     "type": "noise",
+     "amp": 4,
+     "freq": 0.055,
+     "octaves": 2,
+     "animate": 0.55
+    },
+    {
+     "type": "shear",
+     "amount": 0.0783,
+     "angle": 26.565,
+     "drift": 0,
+     "twist": 0
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0058,
+     0
+    ],
+    [
+     0.0313,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.3707,
+     0.45
+    ],
+    [
+     0.4815,
+     0.3
+    ],
+    [
+     0.65,
+     0.1
+    ],
+    [
+     0.8,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Fireball — incandescent underside",
+   "enabled": true,
+   "particle": "mushroom_cloud_stem",
+   "anchor": "cloud",
+   "offset": {
+    "x": {
+     "b": 0,
+     "s": 0.07,
+     "d": "cloud"
+    },
+    "y": {
+     "b": 0,
+     "s": -13,
+     "d": "cap"
+    },
+    "z": {
+     "b": 0,
+     "s": 0.035,
+     "d": "cloud"
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 0,
+     "s": 52,
+     "d": "cap"
+    },
+    "ry": {
+     "b": 0,
+     "s": 16,
+     "d": "cap"
+    },
+    "rz": {
+     "b": 0,
+     "s": 48,
+     "d": "cap"
+    },
+    "underside": {
+     "b": 0.75
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 12
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 420,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.32
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.12,
+     "cells": 4.2,
+     "octaves": 2,
+     "seed": 15,
+     "animate": 0.3
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1.4
+    ],
+    [
+     0.0111,
+     1.2
+    ],
+    [
+     0.037,
+     0.7
+    ],
+    [
+     0.0778,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     0.4
+    ],
+    [
+     0.0043,
+     1.22
+    ],
+    [
+     0.013,
+     1.1
+    ],
+    [
+     0.0351,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Pied — terre aspiree",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "cone",
+    "r0": {
+     "b": 43
+    },
+    "r1": {
+     "b": 13
+    },
+    "height": {
+     "b": 0,
+     "s": 0.22,
+     "d": "stem",
+     "max": 52
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 7
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": -1,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.38
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.16,
+     "cells": 4.2,
+     "octaves": 2,
+     "seed": 17,
+     "animate": 0.3
+    },
+    {
+     "type": "shear",
+     "amount": 0.0783,
+     "angle": 26.565,
+     "drift": 0,
+     "twist": 0
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0.85
+    ],
+    [
+     0.0056,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.3704,
+     0.45
+    ],
+    [
+     0.4815,
+     0.3
+    ],
+    [
+     0.65,
+     0.1
+    ],
+    [
+     0.8,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Sol — rouleaux de poussiere",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 30,
+     "s": 415.3846,
+     "d": "time",
+     "max": 90
+    },
+    "ry": {
+     "b": 13
+    },
+    "rz": {
+     "b": 28,
+     "s": 394.6154,
+     "d": "time",
+     "max": 85
+    },
+    "underside": {
+     "b": 0.12
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 8
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 1700,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.06
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.3,
+     "cells": 4.2,
+     "octaves": 2,
+     "seed": 6,
+     "animate": 0.3
+    },
+    {
+     "type": "radial",
+     "speed": 0.12,
+     "up": 0
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0.6
+    ],
+    [
+     0.0193,
+     1
+    ],
+    [
+     0.0867,
+     0.8
+    ],
+    [
+     0.1926,
+     0.5
+    ],
+    [
+     0.3149,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Souffle — front de poussiere",
+   "enabled": true,
+   "particle": "dust",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 4
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "torus",
+    "R": {
+     "b": 8,
+     "s": 145,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.0481,
+       1
+      ],
+      [
+       0.4815,
+       1
+      ]
+     ]
+    },
+    "tube": {
+     "b": 4
+    },
+    "squash": {
+     "b": 0.6
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 8
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 260,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.09
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "radial",
+     "speed": 0.35,
+     "up": 0
+    },
+    {
+     "type": "lumps",
+     "amp": 0.06,
+     "cells": 4.2,
+     "octaves": 2,
+     "seed": 19,
+     "animate": 0.3
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.0289,
+     0.8
+    ],
+    [
+     0.0481,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Condensation — transient flared veil",
+   "enabled": true,
+   "particle": "white_short",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0,
+     "s": 0.07,
+     "d": "cloud"
+    },
+    "y": {
+     "b": 0,
+     "s": 0.58,
+     "d": "stem"
+    },
+    "z": {
+     "b": 0,
+     "s": 0.035,
+     "d": "cloud"
+    }
+   },
+   "shape": {
+    "type": "cone",
+    "r0": {
+     "b": 0,
+     "s": 29,
+     "d": "cap"
+    },
+    "r1": {
+     "b": 0,
+     "s": 11,
+     "d": "cap"
+    },
+    "height": {
+     "b": 0,
+     "s": 0.24,
+     "d": "stem"
+    },
+    "fill": "surface"
+   },
+   "count": {
+    "b": 9
+   },
+   "every": 1,
+   "startTick": 130,
+   "endTick": 350,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.08,
+     "cells": 4.2,
+     "octaves": 2,
+     "seed": 12,
+     "animate": 0.3
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0241,
+     0
+    ],
+    [
+     0.0337,
+     1
+    ],
+    [
+     0.0506,
+     0.8
+    ],
+    [
+     0.065,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Sol — nappe rampante",
+   "enabled": true,
+   "particle": "ground_dust",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 7
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "disc",
+    "r": {
+     "b": 10,
+     "s": 5400,
+     "d": "time",
+     "max": 380
+    },
+    "inner": {
+     "b": -20,
+     "s": 5400,
+     "d": "time",
+     "min": 0,
+     "max": 350
+    },
+    "thickness": {
+     "b": 2
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 4
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 400,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.01
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.02
+   },
+   "mods": [
+    {
+     "type": "radial",
+     "speed": 0.3,
+     "up": 0
+    },
+    {
+     "type": "lumps",
+     "amp": 0.2,
+     "cells": 4.2,
+     "octaves": 2,
+     "seed": 23,
+     "animate": 0.3
+    },
+    {
+     "type": "bulge",
+     "amp": 0.18,
+     "lobes": 5
+    },
+    {
+     "type": "noise",
+     "amp": 5,
+     "freq": 0.022,
+     "octaves": 2,
+     "animate": 0.1
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 1",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 38
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": 55
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 4
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 4
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 100,
+   "endTick": 2120,
+   "vel": {
+    "x": {
+     "b": 0.1
+    },
+    "y": {
+     "b": 0.17
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0185,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.3926,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — braises du foyer 1",
+   "enabled": true,
+   "particle": "ember",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 38
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": 55
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 3
+    },
+    "ry": {
+     "b": 0.25
+    },
+    "rz": {
+     "b": 3
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 7,
+   "startTick": 100,
+   "endTick": 1600,
+   "vel": {
+    "x": {
+     "b": 0.012
+    },
+    "y": {
+     "b": 0.045
+    },
+    "z": {
+     "b": 0.006
+    },
+    "jitter": 0.06
+   },
+   "mods": [],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0185,
+     1
+    ],
+    [
+     0.1667,
+     1
+    ],
+    [
+     0.2963,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 2",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": -64
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": 24
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 5
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 5
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 112,
+   "endTick": 2220,
+   "vel": {
+    "x": {
+     "b": 0.116
+    },
+    "y": {
+     "b": 0.245
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0207,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.4111,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 3",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 12
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": -78
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 6
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 4
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 124,
+   "endTick": 2320,
+   "vel": {
+    "x": {
+     "b": 0.132
+    },
+    "y": {
+     "b": 0.32
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.023,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.4296,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — braises du foyer 3",
+   "enabled": true,
+   "particle": "ember",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 12
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": -78
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 3
+    },
+    "ry": {
+     "b": 0.25
+    },
+    "rz": {
+     "b": 3
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 7,
+   "startTick": 124,
+   "endTick": 1600,
+   "vel": {
+    "x": {
+     "b": 0.012
+    },
+    "y": {
+     "b": 0.045
+    },
+    "z": {
+     "b": 0.006
+    },
+    "jitter": 0.06
+   },
+   "mods": [],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.023,
+     1
+    ],
+    [
+     0.1667,
+     1
+    ],
+    [
+     0.2963,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 4",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 94
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": -46
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 4
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 5
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 136,
+   "endTick": 2120,
+   "vel": {
+    "x": {
+     "b": 0.1
+    },
+    "y": {
+     "b": 0.395
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0252,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.3926,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 5",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": -108
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": -59
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 5
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 4
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 148,
+   "endTick": 2220,
+   "vel": {
+    "x": {
+     "b": 0.116
+    },
+    "y": {
+     "b": 0.17
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0274,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.4111,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — braises du foyer 5",
+   "enabled": true,
+   "particle": "ember",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": -108
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": -59
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 3
+    },
+    "ry": {
+     "b": 0.25
+    },
+    "rz": {
+     "b": 3
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 7,
+   "startTick": 148,
+   "endTick": 1600,
+   "vel": {
+    "x": {
+     "b": 0.012
+    },
+    "y": {
+     "b": 0.045
+    },
+    "z": {
+     "b": 0.006
+    },
+    "jitter": 0.06
+   },
+   "mods": [],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0274,
+     1
+    ],
+    [
+     0.1667,
+     1
+    ],
+    [
+     0.2963,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 6",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 60
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": 123
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 6
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 5
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 160,
+   "endTick": 2320,
+   "vel": {
+    "x": {
+     "b": 0.132
+    },
+    "y": {
+     "b": 0.245
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0296,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.4296,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 7",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": -35
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": 148
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 4
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 4
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 172,
+   "endTick": 2120,
+   "vel": {
+    "x": {
+     "b": 0.1
+    },
+    "y": {
+     "b": 0.32
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0319,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.3926,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — braises du foyer 7",
+   "enabled": true,
+   "particle": "ember",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": -35
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": 148
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 3
+    },
+    "ry": {
+     "b": 0.25
+    },
+    "rz": {
+     "b": 3
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 7,
+   "startTick": 172,
+   "endTick": 1600,
+   "vel": {
+    "x": {
+     "b": 0.012
+    },
+    "y": {
+     "b": 0.045
+    },
+    "z": {
+     "b": 0.006
+    },
+    "jitter": 0.06
+   },
+   "mods": [],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0319,
+     1
+    ],
+    [
+     0.1667,
+     1
+    ],
+    [
+     0.2963,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 8",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": -157
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": 65
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 5
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 5
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 184,
+   "endTick": 2220,
+   "vel": {
+    "x": {
+     "b": 0.116
+    },
+    "y": {
+     "b": 0.395
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0341,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.4111,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 9",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 158
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": 55
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 6
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 4
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 196,
+   "endTick": 2320,
+   "vel": {
+    "x": {
+     "b": 0.132
+    },
+    "y": {
+     "b": 0.17
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0363,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.4296,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — braises du foyer 9",
+   "enabled": true,
+   "particle": "ember",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 158
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": 55
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 3
+    },
+    "ry": {
+     "b": 0.25
+    },
+    "rz": {
+     "b": 3
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 7,
+   "startTick": 196,
+   "endTick": 1600,
+   "vel": {
+    "x": {
+     "b": 0.012
+    },
+    "y": {
+     "b": 0.045
+    },
+    "z": {
+     "b": 0.006
+    },
+    "jitter": 0.06
+   },
+   "mods": [],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0363,
+     1
+    ],
+    [
+     0.1667,
+     1
+    ],
+    [
+     0.2963,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 10",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": -90
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": -163
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 4
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 5
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 208,
+   "endTick": 2120,
+   "vel": {
+    "x": {
+     "b": 0.1
+    },
+    "y": {
+     "b": 0.245
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0385,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.3926,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 11",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 132
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": -150
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 5
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 4
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 220,
+   "endTick": 2220,
+   "vel": {
+    "x": {
+     "b": 0.116
+    },
+    "y": {
+     "b": 0.32
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0407,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.4111,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — braises du foyer 11",
+   "enabled": true,
+   "particle": "ember",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 132
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": -150
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 3
+    },
+    "ry": {
+     "b": 0.25
+    },
+    "rz": {
+     "b": 3
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 7,
+   "startTick": 220,
+   "endTick": 1600,
+   "vel": {
+    "x": {
+     "b": 0.012
+    },
+    "y": {
+     "b": 0.045
+    },
+    "z": {
+     "b": 0.006
+    },
+    "jitter": 0.06
+   },
+   "mods": [],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0407,
+     1
+    ],
+    [
+     0.1667,
+     1
+    ],
+    [
+     0.2963,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — foyer fumant 12",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 210
+    },
+    "y": {
+     "b": 1.2
+    },
+    "z": {
+     "b": -28
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 6
+    },
+    "ry": {
+     "b": 1
+    },
+    "rz": {
+     "b": 5
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 232,
+   "endTick": 2320,
+   "vel": {
+    "x": {
+     "b": 0.132
+    },
+    "y": {
+     "b": 0.395
+    },
+    "z": {
+     "b": 0.038
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "noise",
+     "amp": 1.8,
+     "freq": 0.18,
+     "octaves": 2,
+     "animate": 0.4
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.043,
+     1
+    ],
+    [
+     0.2407,
+     1
+    ],
+    [
+     0.4296,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Apres-souffle — poussiere entre les crateres",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 1
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "disc",
+    "r": {
+     "b": 160
+    },
+    "inner": {
+     "b": 28
+    },
+    "thickness": {
+     "b": 0.5
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 4
+   },
+   "every": 2,
+   "startTick": 90,
+   "endTick": 1900,
+   "vel": {
+    "x": {
+     "b": 0.055
+    },
+    "y": {
+     "b": 0.005
+    },
+    "z": {
+     "b": 0.022
+    },
+    "jitter": 0.06
+   },
+   "mods": [
+    {
+     "type": "radial",
+     "speed": 0.025,
+     "up": 0
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0167,
+     0.7
+    ],
+    [
+     0.0407,
+     1
+    ],
+    [
+     0.2037,
+     0.8
+    ],
+    [
+     0.3519,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Impact — eclair nucleaire",
+   "enabled": true,
+   "particle": "white_short",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 3
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 10
+    },
+    "ry": {
+     "b": 4
+    },
+    "rz": {
+     "b": 9
+    },
+    "underside": {
+     "b": 0.4
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 12
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 1,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.05
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.05
+   },
+   "mods": [],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ],
+   "priority": 2
+  },
+  {
+   "name": "Sol — rouleau ouvert 1",
+   "enabled": true,
+   "particle": "ground_dust",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 27.4419,
+     "s": 127.4087,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.0385,
+       0.55
+      ],
+      [
+       0.1444,
+       1
+      ],
+      [
+       0.4815,
+       1
+      ]
+     ]
+    },
+    "y": {
+     "b": 5
+    },
+    "z": {
+     "b": 5.5627,
+     "s": 25.827,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.0385,
+       0.55
+      ],
+      [
+       0.1444,
+       1
+      ],
+      [
+       0.4815,
+       1
+      ]
+     ]
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 58
+    },
+    "ry": {
+     "b": 6
+    },
+    "rz": {
+     "b": 32
+    },
+    "underside": {
+     "b": 0.2
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 2,
+   "startTick": 50,
+   "endTick": 1450,
+   "vel": {
+    "x": {
+     "b": 0.0441
+    },
+    "y": {
+     "b": 0.005
+    },
+    "z": {
+     "b": 0.0089
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.3,
+     "cells": 3,
+     "octaves": 2,
+     "seed": 31,
+     "animate": 0.15
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0193,
+     1
+    ],
+    [
+     0.1685,
+     0.7
+    ],
+    [
+     0.2889,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ],
+   "priority": 0
+  },
+  {
+   "name": "Sol — rouleau ouvert 2",
+   "enabled": true,
+   "particle": "ground_dust",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": -9.0521,
+     "s": -34.4627,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.0385,
+       0.55
+      ],
+      [
+       0.1444,
+       1
+      ],
+      [
+       0.4815,
+       1
+      ]
+     ]
+    },
+    "y": {
+     "b": 12
+    },
+    "z": {
+     "b": 26.4964,
+     "s": 100.8756,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.0385,
+       0.55
+      ],
+      [
+       0.1444,
+       1
+      ],
+      [
+       0.4815,
+       1
+      ]
+     ]
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 48
+    },
+    "ry": {
+     "b": 8
+    },
+    "rz": {
+     "b": 40
+    },
+    "underside": {
+     "b": 0.2
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 2,
+   "startTick": 75,
+   "endTick": 1510,
+   "vel": {
+    "x": {
+     "b": -0.0145
+    },
+    "y": {
+     "b": 0.005
+    },
+    "z": {
+     "b": 0.0426
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.3,
+     "cells": 3,
+     "octaves": 2,
+     "seed": 32,
+     "animate": 0.15
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0231,
+     1
+    ],
+    [
+     0.1854,
+     0.7
+    ],
+    [
+     0.2985,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ],
+   "priority": 0
+  },
+  {
+   "name": "Sol — rouleau ouvert 3",
+   "enabled": true,
+   "particle": "ground_dust",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": -22.1471,
+     "s": -115.1649,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.0385,
+       0.55
+      ],
+      [
+       0.1444,
+       1
+      ],
+      [
+       0.4815,
+       1
+      ]
+     ]
+    },
+    "y": {
+     "b": 8
+    },
+    "z": {
+     "b": -17.132,
+     "s": -89.0865,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.0385,
+       0.55
+      ],
+      [
+       0.1444,
+       1
+      ],
+      [
+       0.4815,
+       1
+      ]
+     ]
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 65
+    },
+    "ry": {
+     "b": 10
+    },
+    "rz": {
+     "b": 28
+    },
+    "underside": {
+     "b": 0.2
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 2,
+   "startTick": 100,
+   "endTick": 1570,
+   "vel": {
+    "x": {
+     "b": -0.0356
+    },
+    "y": {
+     "b": 0.005
+    },
+    "z": {
+     "b": -0.0275
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.3,
+     "cells": 3,
+     "octaves": 2,
+     "seed": 33,
+     "animate": 0.15
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.027,
+     1
+    ],
+    [
+     0.2022,
+     0.7
+    ],
+    [
+     0.3081,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ],
+   "priority": 0
+  },
+  {
+   "name": "Sol — rouleau ouvert 4",
+   "enabled": true,
+   "particle": "ground_dust",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 14.3384,
+     "s": 59.914,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.0385,
+       0.55
+      ],
+      [
+       0.1444,
+       1
+      ],
+      [
+       0.4815,
+       1
+      ]
+     ]
+    },
+    "y": {
+     "b": 15
+    },
+    "z": {
+     "b": -24.0502,
+     "s": -100.4953,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.0385,
+       0.55
+      ],
+      [
+       0.1444,
+       1
+      ],
+      [
+       0.4815,
+       1
+      ]
+     ]
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 48
+    },
+    "ry": {
+     "b": 12
+    },
+    "rz": {
+     "b": 34
+    },
+    "underside": {
+     "b": 0.2
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 2,
+   "startTick": 125,
+   "endTick": 1630,
+   "vel": {
+    "x": {
+     "b": 0.023
+    },
+    "y": {
+     "b": 0.005
+    },
+    "z": {
+     "b": -0.0387
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.3,
+     "cells": 3,
+     "octaves": 2,
+     "seed": 34,
+     "animate": 0.15
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0308,
+     1
+    ],
+    [
+     0.2191,
+     0.7
+    ],
+    [
+     0.3178,
+     0
+    ],
+    [
+     0.4815,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.4815,
+     1
+    ]
+   ],
+   "priority": 0
+  },
+  {
+   "name": "Pied — jupe de poussiere",
+   "enabled": true,
+   "particle": "aftermath_smoke",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 2
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "disc",
+    "r": {
+     "b": 55
+    },
+    "inner": {
+     "b": 14
+    },
+    "thickness": {
+     "b": 10
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 5
+   },
+   "every": 1,
+   "startTick": 60,
+   "endTick": 2600,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.05
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.03
+   },
+   "mods": [
+    {
+     "type": "gravitywell",
+     "speed": 0.06
+    },
+    {
+     "type": "lumps",
+     "amp": 0.25,
+     "cells": 3,
+     "octaves": 2,
+     "seed": 67,
+     "animate": 0.3
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0111,
+     0
+    ],
+    [
+     0.037,
+     1
+    ],
+    [
+     0.2778,
+     1
+    ],
+    [
+     0.4815,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "priority": 1
+  },
+  {
+   "name": "Boule de feu — eclair blanc",
+   "enabled": true,
+   "particle": "white_short",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       4
+      ],
+      [
+       0.0019,
+       16
+      ]
+     ]
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       6
+      ],
+      [
+       0.0015,
+       30
+      ]
+     ]
+    },
+    "ry": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       5
+      ],
+      [
+       0.0015,
+       26
+      ]
+     ]
+    },
+    "rz": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       6
+      ],
+      [
+       0.0015,
+       30
+      ]
+     ]
+    },
+    "underside": {
+     "b": 0.6
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 40
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 10,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.02
+   },
+   "mods": [],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "priority": 2
+  },
+  {
+   "name": "Boule de feu — sphere incandescente",
+   "enabled": true,
+   "particle": "mushroom_cloud_stem",
+   "anchor": "cloud",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       6
+      ],
+      [
+       0.0056,
+       14
+      ]
+     ]
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       8
+      ],
+      [
+       0.0056,
+       46
+      ],
+      [
+       0.0259,
+       52
+      ]
+     ]
+    },
+    "ry": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       8
+      ],
+      [
+       0.0056,
+       40
+      ],
+      [
+       0.0259,
+       44
+      ]
+     ]
+    },
+    "rz": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       8
+      ],
+      [
+       0.0056,
+       46
+      ],
+      [
+       0.0259,
+       52
+      ]
+     ]
+    },
+    "underside": {
+     "b": 0.7
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 26
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 140,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.25
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.04
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.18,
+     "cells": 3.6,
+     "octaves": 2,
+     "seed": 61,
+     "animate": 0.5
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1.6
+    ],
+    [
+     0.0046,
+     1.2
+    ],
+    [
+     0.013,
+     0.6
+    ],
+    [
+     0.0259,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "priority": 2
+  }
+ ]
+}

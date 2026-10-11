@@ -1,0 +1,1208 @@
+{
+ "format": "projectexplosive.vfx",
+ "version": 1,
+ "name": "fire_bomb",
+ "globals": {
+  "duration": 500,
+  "fadeTicks": 100,
+  "riseSpeed": 1.5,
+  "maxHeight": 15,
+  "capScaleMin": 1,
+  "capRiseFrac": 0.62,
+  "stemTop": {
+   "b": 0
+  },
+  "wind": [
+   0,
+   0
+  ],
+  "variation": 0.22,
+  "variantSeed": 0,
+  "terrainReach": 5,
+  "clipTerrain": true,
+  "maxParticles": 3000,
+  "terrainFlow": true
+ },
+ "layers": [
+  {
+   "name": "Impact — white hot pulse",
+   "enabled": true,
+   "particle": "blast_flash",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 1
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 0.625
+    },
+    "ry": {
+     "b": 0.625
+    },
+    "rz": {
+     "b": 0.625
+    },
+    "underside": {
+     "b": 0.45
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 3
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 2,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.08
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.03
+   },
+   "mods": [],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Ejecta — ballistic sparks",
+   "enabled": true,
+   "particle": "spark",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.625
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 1
+    },
+    "ry": {
+     "b": 0.5
+    },
+    "rz": {
+     "b": 1
+    },
+    "underside": {
+     "b": 0.45
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 5
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 4,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.5
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.4
+   },
+   "mods": [
+    {
+     "type": "radial",
+     "speed": 0.5625,
+     "up": 0.1
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Fire — expanding lobes",
+   "enabled": true,
+   "particle": "fire_flame",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 1.25
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 2.25
+    },
+    "ry": {
+     "b": 1.875
+    },
+    "rz": {
+     "b": 2
+    },
+    "underside": {
+     "b": 0.45
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 5
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 38,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.025
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.03
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.24,
+     "cells": 3.8,
+     "octaves": 2,
+     "seed": 41,
+     "animate": 0.65
+    },
+    {
+     "type": "radial",
+     "speed": 0.1,
+     "up": 0.02
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     0.3
+    ],
+    [
+     0.03,
+     1.5
+    ],
+    [
+     1,
+     1.5
+    ]
+   ]
+  },
+  {
+   "name": "Fireball — cooling smoke",
+   "enabled": true,
+   "particle": "blast_plume",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 2
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 3
+    },
+    "ry": {
+     "b": 2.875
+    },
+    "rz": {
+     "b": 2.75
+    },
+    "underside": {
+     "b": 0.45
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 8
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 15,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.09
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.03
+   },
+   "mods": [
+    {
+     "type": "cells",
+     "count": 7,
+     "tighten": 0.3,
+     "spread": 0.18,
+     "seed": 42
+    },
+    {
+     "type": "lumps",
+     "amp": 0.24,
+     "cells": 3.8,
+     "octaves": 2,
+     "seed": 43,
+     "animate": 0.65
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     0.25
+    ],
+    [
+     0.018,
+     1.35
+    ],
+    [
+     1,
+     1.35
+    ]
+   ]
+  },
+  {
+   "name": "Ground — rolling dust front",
+   "enabled": true,
+   "particle": "blast_trail",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 1
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "torus",
+    "R": {
+     "b": 1,
+     "s": 10,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.08,
+       1
+      ],
+      [
+       1,
+       1
+      ]
+     ]
+    },
+    "tube": {
+     "b": 1
+    },
+    "squash": {
+     "b": 0.5
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 4
+   },
+   "every": 1,
+   "startTick": 3,
+   "endTick": 40,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.1
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.03
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.24,
+     "cells": 3.8,
+     "octaves": 2,
+     "seed": 45,
+     "animate": 0.65
+    },
+    {
+     "type": "radial",
+     "speed": 0.225,
+     "up": 0.02
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Smoke — rising turbulent plume",
+   "enabled": true,
+   "particle": "fire_smoke",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 2.5
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 2.5
+    },
+    "ry": {
+     "b": 3.5
+    },
+    "rz": {
+     "b": 2.25
+    },
+    "underside": {
+     "b": 0.45
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 3
+   },
+   "every": 1,
+   "startTick": 16,
+   "endTick": 155,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.055
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.03
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.24,
+     "cells": 3.8,
+     "octaves": 2,
+     "seed": 47,
+     "animate": 0.65
+    },
+    {
+     "type": "swirl",
+     "turns": 0.25,
+     "speed": 0.025
+    },
+    {
+     "type": "shear",
+     "amount": 0.16,
+     "angle": 25,
+     "twist": 0
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     0.6
+    ],
+    [
+     0.07,
+     1
+    ],
+    [
+     0.22,
+     0.5
+    ],
+    [
+     0.31,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Base — dark pockets",
+   "enabled": false,
+   "particle": "smoke3",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.625
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 3.25
+    },
+    "ry": {
+     "b": 0.875
+    },
+    "rz": {
+     "b": 2.75
+    },
+    "underside": {
+     "b": 0.45
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 2
+   },
+   "every": 1,
+   "startTick": 8,
+   "endTick": 60,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.04
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.03
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.24,
+     "cells": 3.8,
+     "octaves": 2,
+     "seed": 48,
+     "animate": 0.65
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Incendiary — ground flame tongues",
+   "enabled": false,
+   "particle": "small_fire",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.375
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "disc",
+    "r": {
+     "b": 5
+    },
+    "inner": {
+     "b": 0
+    },
+    "thickness": {
+     "b": 0.5
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 6
+   },
+   "every": 1,
+   "startTick": 10,
+   "endTick": 130,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.09
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.03
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.24,
+     "cells": 3.8,
+     "octaves": 2,
+     "seed": 51,
+     "animate": 0.65
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.12,
+     0.8
+    ],
+    [
+     0.26,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Embers — lifting and cooling",
+   "enabled": true,
+   "particle": "ember",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 1.25
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 2.125
+    },
+    "ry": {
+     "b": 1.625
+    },
+    "rz": {
+     "b": 1.875
+    },
+    "underside": {
+     "b": 0.45
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 4,
+   "startTick": 5,
+   "endTick": 100,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.08
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.14
+   },
+   "mods": [
+    {
+     "type": "radial",
+     "speed": 0.1,
+     "up": 0
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Incendiaire — nappe enflammee 1",
+   "enabled": true,
+   "particle": "small_fire",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.024,
+       2.9002
+      ]
+     ]
+    },
+    "y": {
+     "b": 0.25
+    },
+    "z": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.024,
+       1.3524
+      ]
+     ]
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 1.9
+    },
+    "ry": {
+     "b": 0.35
+    },
+    "rz": {
+     "b": 1.6
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 1,
+   "startTick": 3,
+   "endTick": 115,
+   "vel": {
+    "x": {
+     "b": 0.0136
+    },
+    "y": {
+     "b": 0.065
+    },
+    "z": {
+     "b": 0.0063
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.2,
+     "cells": 3,
+     "octaves": 2,
+     "seed": 150,
+     "animate": 0.35
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.13,
+     1
+    ],
+    [
+     0.23,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Incendiaire — nappe enflammee 2",
+   "enabled": true,
+   "particle": "small_fire",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.024,
+       -3.5697
+      ]
+     ]
+    },
+    "y": {
+     "b": 0.25
+    },
+    "z": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.024,
+       1.4422
+      ]
+     ]
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 1.9
+    },
+    "ry": {
+     "b": 0.35
+    },
+    "rz": {
+     "b": 1.6
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 1,
+   "startTick": 5,
+   "endTick": 103,
+   "vel": {
+    "x": {
+     "b": -0.0139
+    },
+    "y": {
+     "b": 0.077
+    },
+    "z": {
+     "b": 0.0056
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.2,
+     "cells": 3,
+     "octaves": 2,
+     "seed": 151,
+     "animate": 0.35
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.13,
+     1
+    ],
+    [
+     0.23,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Incendiaire — nappe enflammee 3",
+   "enabled": true,
+   "particle": "small_fire",
+   "anchor": "terrain",
+   "offset": {
+    "x": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.024,
+       0.6263
+      ]
+     ]
+    },
+    "y": {
+     "b": 0.25
+    },
+    "z": {
+     "b": 0,
+     "s": 1,
+     "d": "curve",
+     "curve": [
+      [
+       0,
+       0
+      ],
+      [
+       0.024,
+       -4.4562
+      ]
+     ]
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 1.9
+    },
+    "ry": {
+     "b": 0.35
+    },
+    "rz": {
+     "b": 1.6
+    },
+    "underside": {
+     "b": 0.3
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 1
+   },
+   "every": 1,
+   "startTick": 7,
+   "endTick": 91,
+   "vel": {
+    "x": {
+     "b": 0.0021
+    },
+    "y": {
+     "b": 0.089
+    },
+    "z": {
+     "b": -0.0149
+    },
+    "jitter": 0.025
+   },
+   "mods": [
+    {
+     "type": "lumps",
+     "amp": 0.2,
+     "cells": 3,
+     "octaves": 2,
+     "seed": 152,
+     "animate": 0.35
+    }
+   ],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     0.13,
+     1
+    ],
+    [
+     0.23,
+     0
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "Incendiaire — coeur de detonation",
+   "enabled": true,
+   "particle": "blast_core",
+   "anchor": "base",
+   "offset": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.7
+    },
+    "z": {
+     "b": 0
+    }
+   },
+   "shape": {
+    "type": "ellipsoid",
+    "rx": {
+     "b": 2
+    },
+    "ry": {
+     "b": 1.5
+    },
+    "rz": {
+     "b": 1.8
+    },
+    "underside": {
+     "b": 0.4
+    },
+    "fill": "volume"
+   },
+   "count": {
+    "b": 5
+   },
+   "every": 1,
+   "startTick": 0,
+   "endTick": 7,
+   "vel": {
+    "x": {
+     "b": 0
+    },
+    "y": {
+     "b": 0.065
+    },
+    "z": {
+     "b": 0
+    },
+    "jitter": 0.03
+   },
+   "mods": [],
+   "rateCurve": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ]
+   ],
+   "scaleCurve": [
+    [
+     0,
+     0.2
+    ],
+    [
+     0.008,
+     1
+    ]
+   ],
+   "priority": 2
+  }
+ ]
+}

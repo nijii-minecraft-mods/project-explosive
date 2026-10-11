@@ -1,0 +1,29 @@
+{
+  "parent": "projectexplosive:first_bomb",
+  "display": {
+    "icon": {
+      "id": "projectexplosive:big_bomb"
+    },
+    "title": {
+      "translate": "advancements.projectexplosive.explosive_hobbyist.title"
+    },
+    "description": {
+      "translate": "advancements.projectexplosive.explosive_hobbyist.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "use_big_bomb": {
+      "trigger": "minecraft:using_item",
+      "conditions": {
+        "item": {
+          "items": [
+            "projectexplosive:big_bomb"
+          ]
+        }
+      }
+    }
+  }
+}

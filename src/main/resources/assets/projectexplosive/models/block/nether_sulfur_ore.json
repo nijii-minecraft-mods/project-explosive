@@ -1,0 +1,7 @@
+{
+  "parent": "projectexplosive:block/ore_overlay",
+  "textures": {
+    "base": "minecraft:block/netherrack",
+    "overlay": "projectexplosive:block/sulfur_ore_overlay"
+  }
+}

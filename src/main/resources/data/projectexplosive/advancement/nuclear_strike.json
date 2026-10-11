@@ -1,0 +1,29 @@
+{
+  "parent": "projectexplosive:explosive_hobbyist",
+  "display": {
+    "icon": {
+      "id": "projectexplosive:nuclear_bomb"
+    },
+    "title": {
+      "translate": "advancements.projectexplosive.nuclear_strike.title"
+    },
+    "description": {
+      "translate": "advancements.projectexplosive.nuclear_strike.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "use_nuclear_bomb": {
+      "trigger": "minecraft:using_item",
+      "conditions": {
+        "item": {
+          "items": [
+            "projectexplosive:nuclear_bomb"
+          ]
+        }
+      }
+    }
+  }
+}

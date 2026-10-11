@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "projectexplosive:debris",
+    "projectexplosive:uranium_ore",
+    "projectexplosive:deepslate_uranium_ore",
+    "projectexplosive:saltpeter_ore",
+    "projectexplosive:nether_sulfur_ore"
+  ]
+}

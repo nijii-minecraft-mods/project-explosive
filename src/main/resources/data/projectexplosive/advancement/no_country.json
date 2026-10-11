@@ -1,0 +1,23 @@
+{
+  "parent": "projectexplosive:nuclear_strike",
+  "display": {
+    "icon": {
+      "id": "projectexplosive:radioactive_ash"
+    },
+    "title": {
+      "translate": "advancements.projectexplosive.no_country.title"
+    },
+    "description": {
+      "translate": "advancements.projectexplosive.no_country.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "radiation_death": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

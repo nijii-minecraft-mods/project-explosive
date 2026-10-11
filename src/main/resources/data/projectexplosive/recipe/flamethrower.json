@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "projectexplosive:experimental_fire"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IBF",
+    "III",
+    "  I"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "B": {
+      "item": "minecraft:blaze_rod"
+    },
+    "F": {
+      "item": "minecraft:flint_and_steel"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "projectexplosive:flamethrower"
+  }
+}

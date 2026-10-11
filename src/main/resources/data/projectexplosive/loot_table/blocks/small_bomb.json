@@ -1,0 +1,47 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "projectexplosive:small_bomb",
+          "functions": [
+            {
+              "function": "minecraft:set_custom_data",
+              "tag": "{Warhead:\"he\"}",
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "projectexplosive:small_bomb",
+                  "properties": {
+                    "warhead": "he"
+                  }
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_custom_data",
+              "tag": "{Warhead:\"shrapnel\"}",
+              "conditions": [
+                {
+                  "condition": "minecraft:block_state_property",
+                  "block": "projectexplosive:small_bomb",
+                  "properties": {
+                    "warhead": "shrapnel"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}

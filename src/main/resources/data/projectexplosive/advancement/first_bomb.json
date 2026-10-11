@@ -1,0 +1,29 @@
+{
+  "parent": "projectexplosive:root",
+  "display": {
+    "icon": {
+      "id": "projectexplosive:small_bomb"
+    },
+    "title": {
+      "translate": "advancements.projectexplosive.first_bomb.title"
+    },
+    "description": {
+      "translate": "advancements.projectexplosive.first_bomb.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "use_small_bomb": {
+      "trigger": "minecraft:using_item",
+      "conditions": {
+        "item": {
+          "items": [
+            "projectexplosive:small_bomb"
+          ]
+        }
+      }
+    }
+  }
+}

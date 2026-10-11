@@ -1,0 +1,23 @@
+# Gradle
+.gradle/
+build/
+
+# Fabric Loom
+.loom/
+run/
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+bin/
+out/
+
+# OS
+.DS_Store
+Thumbs.db

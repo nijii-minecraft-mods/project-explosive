@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "projectexplosive:block/munitions_workbench"
+    },
+    "facing=east": {
+      "model": "projectexplosive:block/munitions_workbench",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "projectexplosive:block/munitions_workbench",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "projectexplosive:block/munitions_workbench",
+      "y": 270
+    }
+  }
+}

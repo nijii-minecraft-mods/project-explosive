@@ -1,0 +1,23 @@
+{
+  "parent": "projectexplosive:nuclear_strike",
+  "display": {
+    "icon": {
+      "id": "projectexplosive:flash_goggles"
+    },
+    "title": {
+      "translate": "advancements.projectexplosive.flash_blind.title"
+    },
+    "description": {
+      "translate": "advancements.projectexplosive.flash_blind.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "blinded": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

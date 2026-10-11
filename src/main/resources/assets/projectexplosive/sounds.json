@@ -1,0 +1,330 @@
+{
+  "small_bomb.explode": {
+    "subtitle": "sounds.projectexplosive.small_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:small_bomb",
+        "stream": false
+      }
+    ]
+  },
+  "small_bomb.explode_far": {
+    "subtitle": "sounds.projectexplosive.small_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:small_bomb_far",
+        "stream": false
+      }
+    ]
+  },
+  "small_bomb": {
+    "subtitle": "sounds.projectexplosive.small_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:small_bomb",
+        "stream": false
+      }
+    ]
+  },
+  "small_bomb_far": {
+    "subtitle": "sounds.projectexplosive.small_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:small_bomb_far",
+        "stream": false
+      }
+    ]
+  },
+  "big_bomb.explode": {
+    "subtitle": "sounds.projectexplosive.big_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:big_bomb",
+        "stream": false
+      }
+    ]
+  },
+  "big_bomb.explode_far": {
+    "subtitle": "sounds.projectexplosive.big_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:big_bomb_far",
+        "stream": false
+      }
+    ]
+  },
+  "big_bomb": {
+    "subtitle": "sounds.projectexplosive.big_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:big_bomb",
+        "stream": false
+      }
+    ]
+  },
+  "big_bomb_far": {
+    "subtitle": "sounds.projectexplosive.big_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:big_bomb_far",
+        "stream": false
+      }
+    ]
+  },
+  "fire_bomb.explode": {
+    "subtitle": "sounds.projectexplosive.fire_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:fire_bomb",
+        "stream": false
+      }
+    ]
+  },
+  "fire_bomb.explode_far": {
+    "subtitle": "sounds.projectexplosive.fire_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:fire_bomb_far",
+        "stream": false
+      }
+    ]
+  },
+  "fire_bomb": {
+    "subtitle": "sounds.projectexplosive.fire_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:fire_bomb",
+        "stream": false
+      }
+    ]
+  },
+  "fire_bomb_far": {
+    "subtitle": "sounds.projectexplosive.fire_bomb",
+    "sounds": [
+      {
+        "name": "projectexplosive:fire_bomb_far",
+        "stream": false
+      }
+    ]
+  },
+  "nuclear.explode": {
+    "subtitle": "sounds.projectexplosive.nuclear",
+    "sounds": [
+      {
+        "name": "projectexplosive:nuclear",
+        "stream": true
+      }
+    ]
+  },
+  "nuclear.explode_far": {
+    "subtitle": "sounds.projectexplosive.nuclear",
+    "sounds": [
+      {
+        "name": "projectexplosive:nuclear_far",
+        "stream": true
+      }
+    ]
+  },
+  "nuclear": {
+    "subtitle": "sounds.projectexplosive.nuclear",
+    "sounds": [
+      {
+        "name": "projectexplosive:nuclear",
+        "stream": true
+      }
+    ]
+  },
+  "nuclear_far": {
+    "subtitle": "sounds.projectexplosive.nuclear",
+    "sounds": [
+      {
+        "name": "projectexplosive:nuclear_far",
+        "stream": true
+      }
+    ]
+  },
+  "shockwave.sound": {
+    "subtitle": "sounds.projectexplosive.shockwave",
+    "sounds": [
+      {
+        "name": "projectexplosive:shockwave",
+        "stream": false
+      }
+    ]
+  },
+  "shockwave.sound_far": {
+    "subtitle": "sounds.projectexplosive.shockwave",
+    "sounds": [
+      {
+        "name": "projectexplosive:shockwave_far",
+        "stream": false
+      }
+    ]
+  },
+  "shockwave": {
+    "subtitle": "sounds.projectexplosive.shockwave",
+    "sounds": [
+      {
+        "name": "projectexplosive:shockwave",
+        "stream": false
+      }
+    ]
+  },
+  "shockwave_far": {
+    "subtitle": "sounds.projectexplosive.shockwave",
+    "sounds": [
+      {
+        "name": "projectexplosive:shockwave_far",
+        "stream": false
+      }
+    ]
+  },
+  "shockwave.rumble": {
+    "subtitle": "sounds.projectexplosive.shockwave",
+    "sounds": [
+      {
+        "name": "projectexplosive:shockwave_rumble",
+        "stream": false
+      }
+    ]
+  },
+  "shockwave_rumble": {
+    "subtitle": "sounds.projectexplosive.shockwave",
+    "sounds": [
+      {
+        "name": "projectexplosive:shockwave_rumble",
+        "stream": false
+      }
+    ]
+  },
+  "icbm.ignition": {
+    "subtitle": "sounds.projectexplosive.icbm_ignition",
+    "sounds": [
+      {
+        "name": "projectexplosive:icbm_ignition",
+        "stream": false,
+        "attenuation_distance": 256
+      }
+    ]
+  },
+  "icbm_ignition": {
+    "subtitle": "sounds.projectexplosive.icbm_ignition",
+    "sounds": [
+      {
+        "name": "projectexplosive:icbm_ignition",
+        "stream": false,
+        "attenuation_distance": 256
+      }
+    ]
+  },
+  "icbm.engine": {
+    "subtitle": "sounds.projectexplosive.icbm_engine",
+    "sounds": [
+      {
+        "name": "projectexplosive:icbm_engine",
+        "stream": false,
+        "attenuation_distance": 256
+      }
+    ]
+  },
+  "icbm_engine": {
+    "subtitle": "sounds.projectexplosive.icbm_engine",
+    "sounds": [
+      {
+        "name": "projectexplosive:icbm_engine",
+        "stream": false,
+        "attenuation_distance": 256
+      }
+    ]
+  },
+  "geiger.click": {
+    "subtitle": "sounds.projectexplosive.geiger_click",
+    "sounds": [
+      "projectexplosive:geiger_click1",
+      "projectexplosive:geiger_click2",
+      "projectexplosive:geiger_click3"
+    ]
+  },
+  "geiger_click1": {
+    "subtitle": "sounds.projectexplosive.geiger_click",
+    "sounds": [
+      "projectexplosive:geiger_click1"
+    ]
+  },
+  "geiger_click2": {
+    "subtitle": "sounds.projectexplosive.geiger_click",
+    "sounds": [
+      "projectexplosive:geiger_click2"
+    ]
+  },
+  "geiger_click3": {
+    "subtitle": "sounds.projectexplosive.geiger_click",
+    "sounds": [
+      "projectexplosive:geiger_click3"
+    ]
+  },
+  "shrapnel.whizz": {
+    "subtitle": "sounds.projectexplosive.shrapnel_whizz",
+    "sounds": [
+      "projectexplosive:shrapnel_whizz1",
+      "projectexplosive:shrapnel_whizz2",
+      "projectexplosive:shrapnel_whizz3"
+    ]
+  },
+  "shrapnel_whizz": {
+    "subtitle": "sounds.projectexplosive.shrapnel_whizz",
+    "sounds": [
+      "projectexplosive:shrapnel_whizz1",
+      "projectexplosive:shrapnel_whizz2",
+      "projectexplosive:shrapnel_whizz3"
+    ]
+  },
+  "shrapnel_whizz1": {
+    "subtitle": "sounds.projectexplosive.shrapnel_whizz",
+    "sounds": [
+      "projectexplosive:shrapnel_whizz1"
+    ]
+  },
+  "shrapnel.impact": {
+    "subtitle": "sounds.projectexplosive.shrapnel_impact",
+    "sounds": [
+      "projectexplosive:shrapnel_impact1",
+      "projectexplosive:shrapnel_impact2",
+      "projectexplosive:shrapnel_impact3"
+    ]
+  },
+  "shrapnel_impact": {
+    "subtitle": "sounds.projectexplosive.shrapnel_impact",
+    "sounds": [
+      "projectexplosive:shrapnel_impact1",
+      "projectexplosive:shrapnel_impact2",
+      "projectexplosive:shrapnel_impact3"
+    ]
+  },
+  "shrapnel_impact1": {
+    "subtitle": "sounds.projectexplosive.shrapnel_impact",
+    "sounds": [
+      "projectexplosive:shrapnel_impact1"
+    ]
+  },
+  "shrapnel.ricochet": {
+    "subtitle": "sounds.projectexplosive.shrapnel_ricochet",
+    "sounds": [
+      "projectexplosive:shrapnel_ricochet1",
+      "projectexplosive:shrapnel_ricochet2"
+    ]
+  },
+  "shrapnel_ricochet": {
+    "subtitle": "sounds.projectexplosive.shrapnel_ricochet",
+    "sounds": [
+      "projectexplosive:shrapnel_ricochet1",
+      "projectexplosive:shrapnel_ricochet2"
+    ]
+  },
+  "shrapnel_ricochet1": {
+    "subtitle": "sounds.projectexplosive.shrapnel_ricochet",
+    "sounds": [
+      "projectexplosive:shrapnel_ricochet1"
+    ]
+  }
+}

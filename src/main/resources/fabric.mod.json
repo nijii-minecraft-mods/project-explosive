@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "projectexplosive",
+  "version": "${version}",
+  "name": "Project: Explosive",
+  "description": "Project: Explosive Fabric/Polymer mod",
+  "authors": [
+    "Project: Explosive"
+  ],
+  "contact": {},
+  "license": "ARR",
+  "icon": "assets/projectexplosive/textures/gui/mod_icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.project.explosive.ProjectExplosive"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "polymer-core": "*"
+  }
+}

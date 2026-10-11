@@ -1,0 +1,25 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "projectexplosive:experimental_fire"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IWI",
+    "IWI",
+    " I "
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "projectexplosive:extinguisher"
+  }
+}

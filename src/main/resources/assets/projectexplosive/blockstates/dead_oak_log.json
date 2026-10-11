@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=y": { "model": "projectexplosive:block/dead_oak_log" },
+    "axis=x": { "model": "projectexplosive:block/dead_oak_log", "x": 90, "y": 90 },
+    "axis=z": { "model": "projectexplosive:block/dead_oak_log", "x": 90 }
+  }
+}

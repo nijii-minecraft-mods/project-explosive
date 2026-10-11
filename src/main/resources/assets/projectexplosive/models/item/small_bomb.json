@@ -1,0 +1,20 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "projectexplosive:item/small_bomb"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "projectexplosive:warhead": 0.5
+      },
+      "model": "projectexplosive:item/small_bomb_armed"
+    },
+    {
+      "predicate": {
+        "projectexplosive:warhead": 1
+      },
+      "model": "projectexplosive:item/small_bomb_frag"
+    }
+  ]
+}

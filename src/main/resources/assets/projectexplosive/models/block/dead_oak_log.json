@@ -1,0 +1,7 @@
+{
+  "parent": "block/cube_column",
+  "textures": {
+    "end": "projectexplosive:block/dead_oak_up",
+    "side": "projectexplosive:block/dead_oak_cot"
+  }
+}

@@ -1,0 +1,183 @@
+{
+    "targets": [
+        "swap",
+        "bright",
+        "blur"
+    ],
+    "passes": [
+        {
+            "name": "projectexplosive:explosion_bright",
+            "intarget": "minecraft:main",
+            "outtarget": "bright"
+        },
+        {
+            "name": "box_blur",
+            "intarget": "bright",
+            "outtarget": "blur",
+            "use_linear_filter": true,
+            "uniforms": [
+                {
+                    "name": "BlurDir",
+                    "values": [
+                        1.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "Radius",
+                    "values": [
+                        10.0
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "box_blur",
+            "intarget": "blur",
+            "outtarget": "bright",
+            "use_linear_filter": true,
+            "uniforms": [
+                {
+                    "name": "BlurDir",
+                    "values": [
+                        0.0,
+                        1.0
+                    ]
+                },
+                {
+                    "name": "Radius",
+                    "values": [
+                        10.0
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "box_blur",
+            "intarget": "bright",
+            "outtarget": "blur",
+            "use_linear_filter": true,
+            "uniforms": [
+                {
+                    "name": "BlurDir",
+                    "values": [
+                        1.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "Radius",
+                    "values": [
+                        22.0
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "box_blur",
+            "intarget": "blur",
+            "outtarget": "bright",
+            "use_linear_filter": true,
+            "uniforms": [
+                {
+                    "name": "BlurDir",
+                    "values": [
+                        0.0,
+                        1.0
+                    ]
+                },
+                {
+                    "name": "Radius",
+                    "values": [
+                        22.0
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "projectexplosive:explosion_composite",
+            "intarget": "minecraft:main",
+            "outtarget": "swap",
+            "auxtargets": [
+                {
+                    "name": "BloomSampler",
+                    "id": "bright"
+                }
+            ],
+            "uniforms": [
+                {
+                    "name": "Center1",
+                    "values": [
+                        0.5,
+                        0.5
+                    ]
+                },
+                {
+                    "name": "Center2",
+                    "values": [
+                        0.5,
+                        0.5
+                    ]
+                },
+                {
+                    "name": "Center3",
+                    "values": [
+                        0.5,
+                        0.5
+                    ]
+                },
+                {
+                    "name": "RingRadii",
+                    "values": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "DistortStrengths",
+                    "values": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "name": "GoggleExposure",
+                    "values": [
+                        0.0
+                    ]
+                },
+                {
+                    "name": "FlashAmount",
+                    "values": [
+                        0.0
+                    ]
+                },
+                {
+                    "name": "DarkFlash",
+                    "values": [
+                        0.0
+                    ]
+                },
+                {
+                    "name": "Chromatic",
+                    "values": [
+                        0.0
+                    ]
+                },
+                {
+                    "name": "Time",
+                    "values": [
+                        0.0
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "blit",
+            "intarget": "swap",
+            "outtarget": "minecraft:main"
+        }
+    ]
+}

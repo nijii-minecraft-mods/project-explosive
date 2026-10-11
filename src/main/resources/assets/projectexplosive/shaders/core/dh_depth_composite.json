@@ -1,0 +1,20 @@
+{
+    "vertex": "projectexplosive:dh_depth_composite",
+    "fragment": "projectexplosive:dh_depth_composite",
+    "attributes": [
+        "Position"
+    ],
+    "samplers": [
+        { "name": "DhDepthSampler" }
+    ],
+    "uniforms": [
+        { "name": "ScreenSize", "type": "float", "count": 2, "values": [ 1.0, 1.0 ] },
+        { "name": "DhNear", "type": "float", "count": 1, "values": [ 0.1 ] },
+        { "name": "DhFar", "type": "float", "count": 1, "values": [ 4096.0 ] },
+        { "name": "DhReverseZ", "type": "int", "count": 1, "values": [ 0 ] },
+        { "name": "McNear", "type": "float", "count": 1, "values": [ 0.05 ] },
+        { "name": "McFar", "type": "float", "count": 1, "values": [ 1000.0 ] },
+        { "name": "DhDebug", "type": "int", "count": 1, "values": [ 0 ] },
+        { "name": "DhGate", "type": "float", "count": 3, "values": [ 1.0, 1.0, 0.0 ] }
+    ]
+}

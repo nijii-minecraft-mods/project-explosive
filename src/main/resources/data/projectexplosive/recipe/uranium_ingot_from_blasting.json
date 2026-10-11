@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "group": "uranium_ingot",
+  "ingredient": [
+    {
+      "item": "projectexplosive:raw_uranium"
+    },
+    {
+      "item": "projectexplosive:uranium_ore"
+    },
+    {
+      "item": "projectexplosive:deepslate_uranium_ore"
+    }
+  ],
+  "result": {
+    "id": "projectexplosive:uranium_ingot"
+  },
+  "experience": 0.7,
+  "cookingtime": 100
+}

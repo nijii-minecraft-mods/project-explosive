@@ -1,0 +1,7 @@
+{
+  "parent": "projectexplosive:block/ore_overlay",
+  "textures": {
+    "base": "minecraft:block/stone",
+    "overlay": "projectexplosive:block/uranium_ore_overlay"
+  }
+}

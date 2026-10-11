@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=north,part=head": {
+      "model": "projectexplosive:block/bomb"
+    },
+    "facing=north,part=foot": {
+      "model": "projectexplosive:block/bomb"
+    },
+    "facing=south,part=head": {
+      "model": "projectexplosive:block/bomb"
+    },
+    "facing=south,part=foot": {
+      "model": "projectexplosive:block/bomb"
+    },
+    "facing=east,part=head": {
+      "model": "projectexplosive:block/bomb"
+    },
+    "facing=east,part=foot": {
+      "model": "projectexplosive:block/bomb"
+    },
+    "facing=west,part=head": {
+      "model": "projectexplosive:block/bomb"
+    },
+    "facing=west,part=foot": {
+      "model": "projectexplosive:block/bomb"
+    }
+  }
+}

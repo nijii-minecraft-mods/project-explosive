@@ -1,0 +1,50 @@
+{
+  "display": {
+    "icon": {
+      "id": "projectexplosive:small_bomb"
+    },
+    "title": {
+      "translate": "advancements.projectexplosive.root.title"
+    },
+    "description": {
+      "translate": "advancements.projectexplosive.root.description"
+    },
+    "background": "minecraft:textures/gui/advancements/backgrounds/nether.png",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "get_any_bomb": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "projectexplosive:small_bomb",
+              "projectexplosive:big_bomb",
+              "projectexplosive:nuclear_bomb",
+              "projectexplosive:fire_bomb",
+              "projectexplosive:icbm"
+            ]
+          }
+        ],
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "type_specific": {
+                "type": "minecraft:player",
+                "gamemode": [
+                  "survival",
+                  "adventure"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
