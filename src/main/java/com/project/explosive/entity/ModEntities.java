@@ -92,6 +92,7 @@ public class ModEntities {
 
     public static void init() {
         PolymerEntityUtils.registerType(
+                RAW_MULTI_BLOCK,
                 RAW_NUCLEAR_BOMB,
                 RAW_BIG_BOMB,
                 RAW_SMALL_BOMB,

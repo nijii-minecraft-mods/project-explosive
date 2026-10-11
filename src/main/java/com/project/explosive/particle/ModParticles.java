@@ -1,34 +1,31 @@
 package com.project.explosive.particle;
 
 import com.project.explosive.util.RegistrySupplier;
-import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.particle.SimpleParticleType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
 
 public class ModParticles {
-    public static final SimpleParticleType SMOKE = register("smoke");
-    public static final SimpleParticleType EXPLOSION_SMOKE = register("explosion_smoke");
-    public static final SimpleParticleType SMOKE2 = register("smoke2");
-    public static final SimpleParticleType SMOKE2_DECREASING = register("smoke2_decreasing");
-    public static final SimpleParticleType SMOKE3 = register("smoke3");
-    public static final SimpleParticleType SECONDARY_SHOCKWAVE = register("secondary_shockwave");
-    public static final SimpleParticleType WATER_SPLASH = register("water_splash");
-    public static final SimpleParticleType MUSHROOM_CLOUD_STEM = register("mushroom_cloud_stem");
-    public static final SimpleParticleType MUSHROOM_CLOUD_CAP = register("mushroom_cloud_cap");
-    public static final SimpleParticleType SMOKE_BIG = register("smoke_big");
-    public static final SimpleParticleType SMOKE_BIG_SHORT = register("smoke_big_short");
-    public static final SimpleParticleType SMOKE3_BIG = register("smoke3_big");
-    public static final SimpleParticleType SPARK = register("spark");
-    public static final SimpleParticleType EMBER = register("ember");
-    public static final SimpleParticleType DUST = register("dust");
-    public static final SimpleParticleType FIRE_SMOKE = register("fire_smoke");
-    public static final SimpleParticleType SMALL_FIRE = register("small_fire");
-    public static final SimpleParticleType FIRE_FLAME = register("fire_flame");
-    public static final SimpleParticleType CRATER_SMOKE = register("crater_smoke");
-    public static final SimpleParticleType TRAIL_SMOKE = register("trail_smoke");
-    public static final SimpleParticleType WHITE_SHORT = register("white_short");
+    public static final SimpleParticleType SMOKE = ParticleTypes.CAMPFIRE_COSY_SMOKE;
+    public static final SimpleParticleType EXPLOSION_SMOKE = ParticleTypes.EXPLOSION;
+    public static final SimpleParticleType SMOKE2 = ParticleTypes.LARGE_SMOKE;
+    public static final SimpleParticleType SMOKE2_DECREASING = ParticleTypes.SMOKE;
+    public static final SimpleParticleType SMOKE3 = ParticleTypes.CAMPFIRE_COSY_SMOKE;
+    public static final SimpleParticleType SECONDARY_SHOCKWAVE = ParticleTypes.POOF;
+    public static final SimpleParticleType WATER_SPLASH = ParticleTypes.SPLASH;
+    public static final SimpleParticleType MUSHROOM_CLOUD_STEM = ParticleTypes.CAMPFIRE_COSY_SMOKE;
+    public static final SimpleParticleType MUSHROOM_CLOUD_CAP = ParticleTypes.CAMPFIRE_COSY_SMOKE;
+    public static final SimpleParticleType SMOKE_BIG = ParticleTypes.CAMPFIRE_COSY_SMOKE;
+    public static final SimpleParticleType SMOKE_BIG_SHORT = ParticleTypes.CAMPFIRE_COSY_SMOKE;
+    public static final SimpleParticleType SMOKE3_BIG = ParticleTypes.LARGE_SMOKE;
+    public static final SimpleParticleType SPARK = ParticleTypes.LAVA;
+    public static final SimpleParticleType EMBER = ParticleTypes.FLAME;
+    public static final SimpleParticleType DUST = ParticleTypes.POOF;
+    public static final SimpleParticleType FIRE_SMOKE = ParticleTypes.SMOKE;
+    public static final SimpleParticleType SMALL_FIRE = ParticleTypes.SMALL_FLAME;
+    public static final SimpleParticleType FIRE_FLAME = ParticleTypes.FLAME;
+    public static final SimpleParticleType CRATER_SMOKE = ParticleTypes.CAMPFIRE_COSY_SMOKE;
+    public static final SimpleParticleType TRAIL_SMOKE = ParticleTypes.CAMPFIRE_COSY_SMOKE;
+    public static final SimpleParticleType WHITE_SHORT = ParticleTypes.POOF;
 
     public static final RegistrySupplier<SimpleParticleType> SMOKE_PARTICLE = new RegistrySupplier<>(SMOKE);
     public static final RegistrySupplier<SimpleParticleType> EXPLOSION_SMOKE_PARTICLE = new RegistrySupplier<>(EXPLOSION_SMOKE);
@@ -51,14 +48,6 @@ public class ModParticles {
     public static final RegistrySupplier<SimpleParticleType> CRATER_SMOKE_PARTICLE = new RegistrySupplier<>(CRATER_SMOKE);
     public static final RegistrySupplier<SimpleParticleType> TRAIL_SMOKE_PARTICLE = new RegistrySupplier<>(TRAIL_SMOKE);
     public static final RegistrySupplier<SimpleParticleType> WHITE_SHORT_PARTICLE = new RegistrySupplier<>(WHITE_SHORT);
-
-    private static SimpleParticleType register(String name) {
-        return Registry.register(
-                Registries.PARTICLE_TYPE,
-                Identifier.of("projectexplosive", name),
-                FabricParticleTypes.simple(true)
-        );
-    }
 
     public static void init() {
     }

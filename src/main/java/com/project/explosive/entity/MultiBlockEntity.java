@@ -2,6 +2,7 @@ package com.project.explosive.entity;
 
 import com.project.explosive.Config;
 import com.project.explosive.util.ParticleUtil;
+import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,6 +20,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -28,7 +30,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
-public class MultiBlockEntity extends Entity {
+public class MultiBlockEntity extends Entity implements PolymerEntity {
     private Map<BlockPos, BlockState> storedBlocks = new HashMap<>();
     private BlockPos centerOffset;
     private float rotationYaw;
@@ -494,6 +496,11 @@ public class MultiBlockEntity extends Entity {
 
         tag.put("Blocks", blocksList);
         tag.putLong("CenterOffset", this.centerOffset.asLong());
+    }
+
+    @Override
+    public EntityType<?> getPolymerEntityType(ServerPlayerEntity player) {
+        return EntityType.FALLING_BLOCK;
     }
 
     @Override
