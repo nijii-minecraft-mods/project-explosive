@@ -231,14 +231,14 @@ public class RadiationManager {
     public static void applyRadiationToEntities(ServerWorld level) {
         if (EnvironmentalConfig.areRadiationEffectsEnabled()) {
             long gameTick = level.getTime();
-            if (gameTick % 10L == 0L) {
+            if (gameTick % 20L == 0L) {
                 for (ServerPlayerEntity sp : level.getPlayers()) {
-                    for (LivingEntity entity : level.getEntitiesByClass(LivingEntity.class, new Box(sp.getBlockPos()).expand(48.0), e -> true)) {
+                    for (LivingEntity entity : level.getEntitiesByClass(LivingEntity.class, new Box(sp.getBlockPos()).expand(32.0), e -> true)) {
                         if (!(entity instanceof PlayerEntity)) {
-                            double ashRadiation = getRadiationFromNearbyAsh(level, entity.getBlockPos(), 5);
-                            if (ashRadiation > 0.0) {
+                            BlockPos ep = entity.getBlockPos();
+                            if (level.getBlockState(ep).getBlock() instanceof RadioactiveAshBlock || level.getBlockState(ep.down()).getBlock() instanceof RadioactiveAshBlock) {
                                 RadiationManager.EntityRadiationData data = getEntityRadiationData(entity);
-                                data.addDose(ashRadiation);
+                                data.addDose(0.005);
                             }
                         }
                     }
@@ -303,6 +303,10 @@ public class RadiationManager {
                     data.tick();
                     if (level.getEntity(entryx.getKey()) instanceof LivingEntity living && living.isAlive()) {
                         double dose = data.getDose();
+                        if (dose < 0.01) {
+                            iterator.remove();
+                            continue;
+                        }
                         float glow = data.getGlowIntensity();
                         if (data.isContaminated() && gameTick % 10L == 0L) {
                             level.spawnParticles(
@@ -431,7 +435,9 @@ public class RadiationManager {
 
         RadiationSyncPacket packet = new RadiationSyncPacket(levels);
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            ServerPlayNetworking.send(player, packet);
+            if (ServerPlayNetworking.canSend(player, RadiationSyncPacket.ID)) {
+                ServerPlayNetworking.send(player, packet);
+            }
         }
     }
 

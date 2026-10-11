@@ -355,24 +355,36 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
 
     private void processShockwave(ServerWorld serverLevel) {
         this.shockwaveTicks++;
-        double currentRadius = (double) this.shockwaveTicks * 2.0;
+        double currentRadius = (double) this.shockwaveTicks * 2.5;
 
-        if (this.shockwaveTicks > MAX_SHOCKWAVE_AGE) {
+        if (this.shockwaveTicks > 60) {
             this.shockwaveActive = false;
             return;
         }
 
-        if (this.shockwaveTicks % 2 == 0) {
+        double maxListenDistSq = (currentRadius + 128.0) * (currentRadius + 128.0);
+        boolean playerNearby = false;
+        for (ServerPlayerEntity player : serverLevel.getPlayers()) {
+            if (player.squaredDistanceTo(this.originPos.getX(), this.originPos.getY(), this.originPos.getZ()) <= maxListenDistSq) {
+                playerNearby = true;
+                break;
+            }
+        }
+        if (!playerNearby) {
+            return;
+        }
+
+        if (this.shockwaveTicks % 3 == 0) {
             double cx = (double) this.originPos.getX() + 0.5;
             double cz = (double) this.originPos.getZ() + 0.5;
-            int points = (int) MathHelper.clamp(currentRadius * 2.5, 20.0, 80.0);
+            int points = (int) MathHelper.clamp(currentRadius * 0.8, 12.0, 24.0);
             for (int i = 0; i < points; i++) {
                 double ang = (Math.PI * 2) * (double) i / (double) points;
                 double px = cx + Math.cos(ang) * currentRadius;
                 double pz = cz + Math.sin(ang) * currentRadius;
                 int py = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, MathHelper.floor(px), MathHelper.floor(pz));
                 ParticleUtil.spawnLongDistanceParticles(
-                        serverLevel, ModParticles.SMOKE_BIG_SHORT, px, (double) py + 0.5, pz, 1, Math.cos(ang) * 0.25, 0.05, Math.sin(ang) * 0.25
+                        serverLevel, ModParticles.SMOKE_BIG_SHORT, px, (double) py + 0.5, pz, 1, Math.cos(ang) * 0.2, 0.04, Math.sin(ang) * 0.2
                 );
             }
         }

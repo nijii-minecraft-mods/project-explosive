@@ -286,7 +286,7 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
         for (Entry<BlockPos, BlockState> entry : this.storedBlocks.entrySet()) {
             BlockPos relativePos = entry.getKey();
             BlockPos realPos = placementPos.add(relativePos);
-            boolean shouldBreakOnImpact = r.nextDouble() < 0.2;
+            boolean shouldBreakOnImpact = r.nextDouble() < 0.25;
             if (shouldBreakOnImpact) {
                 if (!this.getWorld().isClient) {
                     ServerWorld serverLevel = (ServerWorld) this.getWorld();
@@ -296,20 +296,24 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
                             (double) realPos.getX() + 0.5,
                             (double) realPos.getY() + 0.5,
                             (double) realPos.getZ() + 0.5,
-                            5,
-                            0.3,
-                            0.3,
-                            0.3,
-                            0.1
+                            3,
+                            0.2,
+                            0.2,
+                            0.2,
+                            0.05
                     );
                 }
             } else if (this.canPlaceBlock(realPos)) {
-                this.createFallingBlock(realPos, entry.getValue());
+                if (r.nextDouble() < 0.2) {
+                    this.createFallingBlock(realPos, entry.getValue());
+                } else {
+                    this.getWorld().setBlockState(realPos, entry.getValue(), 3);
+                }
                 placedBlocks++;
             } else {
                 BlockPos alternativePos = this.findAlternativePosition(placementPos, relativePos);
                 if (alternativePos != null) {
-                    this.createFallingBlock(alternativePos, entry.getValue());
+                    this.getWorld().setBlockState(alternativePos, entry.getValue(), 3);
                     placedBlocks++;
                 }
             }
@@ -318,7 +322,7 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
         if (placedBlocks == 0 && !this.storedBlocks.isEmpty()) {
             Entry<BlockPos, BlockState> firstEntry = this.storedBlocks.entrySet().iterator().next();
             BlockPos firstPos = placementPos.add(firstEntry.getKey());
-            this.createFallingBlock(firstPos, firstEntry.getValue());
+            this.getWorld().setBlockState(firstPos, firstEntry.getValue(), 3);
         }
     }
 

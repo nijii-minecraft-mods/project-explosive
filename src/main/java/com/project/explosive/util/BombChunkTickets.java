@@ -73,6 +73,22 @@ public final class BombChunkTickets {
                 }
             }
         }
+
+        if (server.getTicks() % 100 == 0 && !ENTITY_AREAS.isEmpty()) {
+            ENTITY_AREAS.entrySet().removeIf(entry -> {
+                UUID uuid = entry.getKey();
+                for (ServerWorld world : server.getWorlds()) {
+                    Entity ent = world.getEntity(uuid);
+                    if (ent != null && ent.isAlive()) {
+                        return false;
+                    }
+                }
+                for (ServerWorld world : server.getWorlds()) {
+                    world.getChunkManager().removeTicket(BOMB_ENTITY_TICKET, new ChunkPos(entry.getValue().cx(), entry.getValue().cz()), entry.getValue().radius(), uuid);
+                }
+                return true;
+            });
+        }
     }
 
     private static void onServerStopped(MinecraftServer server) {

@@ -60,8 +60,10 @@ public class FirePropagationManager {
 
     public static void init() {
         ServerTickEvents.END_WORLD_TICK.register(world -> {
-            FirePropagationSavedData data = FirePropagationSavedData.get(world);
-            data.markDirty();
+            if (!INSTANCE.activeSystems.isEmpty()) {
+                FirePropagationSavedData data = FirePropagationSavedData.get(world);
+                data.markDirty();
+            }
             onWorldTick(world);
         });
     }

@@ -72,7 +72,7 @@ public final class SoundUtil {
             playPositionedTo(player, x, y, z, sound, source, volume, pitch);
         } else {
             DelayedTaskScheduler.schedule(level, delayTicks, () -> {
-                if (player.isAlive() && player.getWorld() == level) {
+                if (player.isAlive() && player.getWorld() == level && !player.isDisconnected()) {
                     playPositionedTo(player, x, y, z, sound, source, volume, pitch);
                 }
             });
