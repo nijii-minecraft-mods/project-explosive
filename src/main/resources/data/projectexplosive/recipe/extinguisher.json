@@ -1,16 +1,14 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "projectexplosive:experimental_fire"
-    }
-  ],
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "IWI",
+    " L ",
     "IWI",
     " I "
   ],
   "key": {
+    "L": {
+      "item": "minecraft:lever"
+    },
     "I": {
       "item": "minecraft:iron_ingot"
     },
@@ -19,7 +17,7 @@
     }
   },
   "result": {
-    "count": 1,
-    "id": "projectexplosive:extinguisher"
+    "id": "projectexplosive:extinguisher",
+    "count": 1
   }
 }

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "URU",
+    "RBR",
+    "URU"
+  ],
+  "key": {
+    "U": {
+      "item": "projectexplosive:uranium_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "B": {
+      "item": "minecraft:iron_block"
+    }
+  },
+  "result": {
+    "id": "projectexplosive:nuclear_core",
+    "count": 1
+  }
+}

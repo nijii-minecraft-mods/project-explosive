@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "projectexplosive:sulfur"
+    },
+    {
+      "item": "projectexplosive:saltpeter"
+    },
+    {
+      "item": "minecraft:coal"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
+  ],
+  "result": {
+    "id": "projectexplosive:solid_fuel",
+    "count": 2
+  }
+}

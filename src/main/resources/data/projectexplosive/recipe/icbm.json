@@ -1,18 +1,26 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [
-    {
-      "item": "minecraft:spyglass"
-    },
-    {
-      "item": "minecraft:compass"
-    },
-    {
-      "item": "minecraft:redstone"
-    }
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " G ",
+    " C ",
+    "FEF"
   ],
+  "key": {
+    "G": {
+      "item": "projectexplosive:guidance_computer"
+    },
+    "C": {
+      "item": "projectexplosive:bomb_casing"
+    },
+    "F": {
+      "item": "projectexplosive:solid_fuel"
+    },
+    "E": {
+      "item": "projectexplosive:rocket_engine"
+    }
+  },
   "result": {
-    "count": 1,
-    "id": "projectexplosive:icbm"
+    "id": "projectexplosive:icbm",
+    "count": 1
   }
 }

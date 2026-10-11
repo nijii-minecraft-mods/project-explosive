@@ -1,96 +1,194 @@
-# Project: Explosive (Fabric 1.21.1 + Polymer Port)
+# 💥 Project: Explosive (Fabric 1.21.1 + Polymer)
 
-A complete server-side port of the Minecraft mod **Project: Explosive** to **Fabric 1.21.1** powered by **Polymer**.
+Серверный порт легендарного мода **Project: Explosive** на **Fabric 1.21.1**, работающий на библиотеке **[Polymer](https://github.com/Patbox/Polymer)**.
 
-Vanilla Minecraft clients can connect and experience realistic explosions, custom bomb models, sound delays, radiation sickness, and 3D tumbling physics debris without installing any client-side mods!
-
----
-
-## 🚀 Key Features
-
-### 1. Nuclear & Ballistic Weaponry
-- **Nuclear Bomb**:
-  - Blinding flash and acoustic ring effects.
-  - Hemispherical crater excavation (`CraterUtil`) with ejecta block clusters.
-  - True 3D mushroom cloud simulation (vertical rising stem, torus cap dome, and fireball core) rendered with high-visibility vanilla particles.
-  - BFS structural integrity scan (`BlastCrumble`) causing unsupported buildings to collapse into physics rubble.
-  - Delayed speed-of-sound shockwave audio propagation ($t = \text{distance} / 343\text{ m/s}$).
-  - Long-term radiation fallout zones with ash deposition and terrain scorching (`EnvironmentalTransformer`).
-- **ICBM (Intercontinental Ballistic Missile)**:
-  - 4-phase flight model: `BOOST` (vertical ascent), `SEPARATION` (tumbling booster stage release), `CRUISE` (high-altitude trajectory), and `DIVE` (supersonic terminal plunge).
-  - Force-loaded chunk ticketing along the missile corridor so trajectories never freeze in unloaded terrain.
-- **Conventional Bombs**:
-  - **Big Bomb (HE)**: Deep excavation crater and massive structural collapse.
-  - **Small Bomb**: Compact tactical blast.
-  - **Fire Bomb**: Incendiary napalm blast triggering dynamic wildfire simulation (`FirePropagationManager`).
-
-### 2. Physical Structural Collapse & Debris
-- **BFS Structural Graph Analysis**: Scans building support connections to ground bedrock. Detached sections collapse into falling blocks or tumbling debris clusters (`MultiBlockEntity`).
-- **MultiBlock Physics**: Physical 3D block clusters with tumbling angular velocity, bounce physics, impact dust, and landing restitution.
-
-### 3. Radiation & Environmental Systems
-- **Radiation Fallout**: Persistent dimension-saved radiation fields decaying over time.
-- **Geiger Counter**: Detects local radiation, ticks audibly with increasing tempo, and displays dose rate on the player's action bar.
-- **Acute Radiation Sickness (ARS)**: Sickness progression inflicting nausea, hunger, weakness, slowness, poison, and blindness.
-
-### 4. Arsenal & Equipment
-- **Airstrike Caller**: Laser target designator summoning high-altitude gravity bombs.
-- **Flamethrower**: Pressurized jet of flame and embers igniting targets and foliage.
-- **Chemical Extinguisher**: Suppresses fires, cools lava into obsidian, and washes away radioactive ash.
-- **Custom Blocks**: Radioactive Ash (multi-layer fallout), Rubble Debris, Dead Oak Logs & Planks, Dead Dirt.
+> **Главная фишка:** Мод устанавливается **только на сервер**! Игроки заходят с абсолютно чистых **ванильных клиентов Minecraft 1.21.1** (без Fabric, Forge или каких-либо модов) и видят кастомные 3D-модели оружия, ракет, взрывов, слышат кастомные звуки и испытывают реалистичную физику взрывов и разрушений.
 
 ---
 
-## 🛠️ Polymer Server-Side Architecture
+## 📥 Статическая ссылка на скачивание (Latest Release)
 
-This port leverages [Polymer](https://github.com/Patbox/Polymer) to achieve full compatibility with unmodified vanilla clients:
-- **Items & Weapons**: Registered with `PolymerItem`. Vanilla clients receive familiar base items with server-synchronized custom models, textures, and sounds via auto-generated server resource packs.
-- **Entities**: Missiles, bombs, and tumbling blocks implement `PolymerEntity` with automatic client-side representation.
-- **Zero Client Mods**: Works on standard Fabric / Paper-proxy servers without requiring Fabric Loader on joining players.
+Благодаря настроенному GitHub Actions CI/CD релиз всегда доступен по постоянной статической ссылке, которая не меняется при выходе новых версий:
 
----
+* **Прямая ссылка на последний JAR-файл:**  
+  `https://github.com/<OWNER>/<REPO>/releases/latest/download/project-explosive-fabric.jar`
+* **Страница последнего релиза:**  
+  `https://github.com/<OWNER>/<REPO>/releases/latest`
 
-## ⚙️ In-Game Commands
-
-| Command | Permission | Description |
-|---|---|---|
-| `/custombomb <scale: 1-10> [x y z]` | Op (Level 2) | Spawns a scaled bomb (1-4: Small, 5-7: Big, 8-10: Nuclear) at the specified coordinates. |
-| `/radiation` | All | Displays the player's current accumulated radiation dose in Sieverts (Sv). |
-| `/radiation clear` | Op (Level 2) | Clears all active radiation sources and resets player exposure. |
-| `/radiation sources` | Op (Level 2) | Displays the count of active radiation sources in the world. |
-| `/ignitefire [x y z]` | Op (Level 2) | Starts the dynamic wildfire propagation system at the target location. |
-| `/stopfire [x y z] [radius]` | Op (Level 2) | Extinguishes active fire simulation cells globally or within a radius. |
-| `/testmultiblock <x y z> <maxBlocks>` | Op (Level 2) | Extracts a connected block cluster into a 3D tumbling physics debris entity. |
+*(Замените `<OWNER>/<REPO>` на адрес вашего репозитория на GitHub)*
 
 ---
 
-## 📦 Building from Source
+## ⚡ Быстрый старт и установка
 
-### Prerequisites
-- JDK 21 or higher
-- Git
+### Требования к серверу:
+- **Minecraft:** `1.21.1`
+- **Загрузчик:** [Fabric Loader](https://fabricmc.net/) `>= 0.16.0`
+- **Java:** `21`
+- **Обязательные серверные библиотеки:**
+  - [Fabric API](https://modrinth.com/mod/fabric-api)
+  - [Polymer Core](https://modrinth.com/mod/polymer) (`0.9.19+1.21.1`)
+  - [Polymer Resource Pack](https://modrinth.com/mod/polymer)
+  - [Polymer Virtual Entity](https://modrinth.com/mod/polymer)
+  - [Polymer Blocks](https://modrinth.com/mod/polymer)
 
-### Build Command
+### Установка:
+1. Поместите файл `project-explosive-fabric.jar` и зависимые моды в папку `mods/` вашего сервера.
+2. Запустите сервер. Polymer автоматически сгенерирует и настроит серверный ресурс-пак.
+3. **Игрокам не нужно ничего скачивать!** При входе на сервер клиент автоматически принимает ресурс-пак и получает полный визуал и аудио.
+
+---
+
+## 🔬 Технологическое древо и крафты
+
+Все предметы и оружие теперь имеют полноценную систему выживания: от добычи урановой руды и химического синтеза до сборки микроэлектроники и ракетных ступеней.
+
+### 1. Добыча сырья и химия
+* **Урановая руда / Глубинная урановая руда** (`uranium_ore`, `deepslate_uranium_ore`):
+  * При добыче выпадает **Сырой уран** (`raw_uranium`).
+  * Переплавьте в печи или плавильне для получения **Уранового слитка** (`uranium_ingot`).
+* **Сера** (`sulfur`):
+  * Добывается в Незере из **Серной руды Незера** (`nether_sulfur_ore`).
+  * Либо крафтится в верстаке: `2 Пороха + 1 Огненный порошок` $\rightarrow$ `2 Серы`.
+* **Селитра** (`saltpeter`):
+  * Добывается в обычном мире из **Селитряной руды** (`saltpeter_ore`).
+  * Либо синтезируется: `2 Костной муки + 1 Песок` $\rightarrow$ `2 Селитры`.
+* **Твёрдое ракетное топливо** (`solid_fuel`):
+  * Без сетки (в любой форме): `1 Сера + 1 Селитра + 1 Уголь + 1 Порох` $\rightarrow$ `2 Твердотопливных элемента`.
+
+---
+
+### 2. Промежуточные механические и электронные детали
+* **Корпус бомбы / ракеты** (`bomb_casing`):
+  ```
+    [ Железо ]
+  [ Железо ]   [ Железо ]
+    [ Железо ]
+  ```
+  *(4 железных слитка по бокам)*
+
+* **Малая боевая часть** (`small_bomb_head`):
+  ```
+    [ Железо ]
+  [ Железо ] [ TNT ] [ Железо ]
+    [ Железо ]
+  ```
+
+* **Тяжёлая боевая часть** (`big_bomb_head`):
+  ```
+    [ TNT ]
+  [ TNT ] [ Железный блок ] [ TNT ]
+    [ Железо ]
+  ```
+
+* **Ракетный двигатель** (`rocket_engine`):
+  ```
+  [ Железо ]       [ Медь ]          [ Железо ]
+  [ Железо ] [ Огненный порошок ]    [ Железо ]
+  [ Огненный заряд ] [ Редстоун ]    [ Огненный заряд ]
+  ```
+
+* **Блок наведения / Компьютер** (`guidance_computer`):
+  ```
+  [ Редстоун ] [ Подзорная труба ] [ Редстоун ]
+  [ Кварц ]         [ Медь ]       [ Кварц ]
+  [ Редстоун ]      [ Медь ]       [ Редстоун ]
+  ```
+
+* **Ядерный сердечник** (`nuclear_core`):
+  ```
+  [ Уран ]     [ Редстоун-блок ]  [ Уран ]
+  [ Редстоун-блок ] [ Блок железа ] [ Редстоун-блок ]
+  [ Уран ]     [ Редстоун-блок ]  [ Уран ]
+  ```
+
+---
+
+### 3. Финальная сборка вооружения
+* **Бомба Mk 82** (`small_bomb`):
+  * `Малая боевая часть` (сверху) + `Корпус бомбы` (по центру) + `Порох` (снизу).
+* **Тяжёлая бомба Mk 84** (`big_bomb`):
+  * `Тяжёлая боевая часть` (сверху) + `Железо | Корпус | Железо` + `Порох` (снизу).
+* **Напалмовая бомба** (`fire_bomb`):
+  * `Огненный порошок` (сверху) + `Сера | Корпус | Сера` + `Огненный заряд` (снизу).
+* **Термоядерная бомба (Fat Man)** (`nuclear_bomb`):
+  * `Тяжёлая боевая часть` (сверху) + `Редстоун-блок | Ядерный сердечник | Редстоун-блок` + `Корпус бомбы` (снизу).
+* **Межконтинентальная баллистическая ракета (МБР)** (`icbm`):
+  * `Блок наведения` (сверху) + `Корпус ракеты` (центр) + `Топливо | Двигатель | Топливо` (снизу).
+* **Целеуказатель авиаудара** (`airstrike_caller`):
+  * `Подзорная труба` (сверху) + `Железо | Блок наведения | Железо` + `Редстоун` (снизу).
+* **Огнемёт** (`flamethrower`):
+  * 4 Железа + Огниво + Стержень ифрита.
+* **Огнетушитель** (`extinguisher`):
+  * 3 Железа + Ведро воды + Рычаг.
+* **Счётчик Гейгера** (`radiation_detector`):
+  * 4 Железа + Компас + 2 Редстоуна.
+
+---
+
+## 🎯 Инструкция по использованию
+
+### 🚀 Межконтинентальная баллистическая ракета (МБР / ICBM)
+1. **Выбор боевой части:** Зажмите `Shift` и нажмите **ПКМ**, держа ракету в руке, чтобы переключить боеголовку:
+   - `Small` — тактический удар;
+   - `Big` — тяжёлый фугасный взрыв;
+   - `Nuclear` — термоядерный удар с образованием грибовидного облака и радиацией.
+2. **Пуск:** Нажмите **ПКМ** в направлении цели или по блоку.
+3. **Физика полёта:**
+   - **Фаза 1 (BOOST):** Ракета с рёвом двигателей вертикально уходит в стратосферу.
+   - **Фаза 2 (SEPARATION):** Отстреливается первая ступень, которая с кувырканием падает на землю.
+   - **Фаза 3 (CRUISE):** Ракета на сверхзвуковой скорости пересекает мир на высоте сотен блоков.
+   - **Фаза 4 (DIVE):** Ракета переходит в отвесное пикирование в координаты цели и детонирует при ударе.
+   - *Чанки по маршруту полёта и в зоне поражения автоматически принудительно прогружаются системой `BombChunkTickets`.*
+
+### 📡 Целеуказатель авиаудара (Airstrike Caller)
+1. Возьмите прибор в руку и наведите перекрестие прицела на желаемую точку на земле на дистанции до сотен блоков.
+2. Нажмите **ПКМ**. Раздастся звуковой сигнал подтверждения координат.
+3. Через несколько секунд с высоты 200 блоков прилетят 5 тяжёлых бомб Mk 82, накрывая указанную зону ковровой бомбардировкой.
+
+### 💣 Бомбы свободного падения
+- **Установка блоком:** Нажмите **ПКМ** по поверхности блока. Бомба установится как объект и сдетонирует при подаче сигнала редстоуна.
+- **Сброс с высоты / бросок:** Зажмите `Shift` и нажмите **ПКМ** в воздухе (например, летя на элитрах или сидя в самолёте/вертолёте). Бомба полетит вниз под действием гравитации.
+
+### 🔥 Огнемёт и Огнетушитель
+- **Огнемёт:** Зажмите **ПКМ** для подачи непрерывной струи пламени. Поджигает мобов, игроков, блоки и вызывает пожары.
+- **Огнетушитель:** Зажмите **ПКМ** для распыления пены. Мгновенно тушит открытый огонь, превращает лаву в обсидиан и смывает радиоактивный пепел.
+
+### ☢ Радиация и счётчик Гейгера
+- После ядерного взрыва образуется невидимое радиоактивное поле, постепенно спадающее со временем.
+- В руке **Счётчик Гейгера** начинает характерно потрескивать (частота треска зависит от мощности излучения), а в Action Bar выводится текущая доза в зивертах (`☢ Radiation: X.XX Sv`).
+- При получении дозы свыше 0.5 Sv развивается острая лучевая болезнь (тошнота, слабость, голод, урон, слепота).
+
+---
+
+## 💻 Консольные команды (Для администраторов)
+
+| Команда | Описание |
+|---|---|
+| `/custombomb <scale: 1-10> [x y z]` | Сбросить кастомную бомбу выбранной мощности (1-4: Mk 82, 5-7: Mk 84, 8-10: Ядерная). |
+| `/radiation` | Посмотреть текущую дозу радиации игрока. |
+| `/radiation clear` | Очистить все очаги радиации в мире и сбросить заражение игроков. |
+| `/radiation sources` | Показать количество активных источников радиации. |
+| `/ignitefire [x y z]` | Запустить термодинамическую симуляцию пожара в указанной точке. |
+| `/stopfire [x y z] [radius]` | Потушить активные ячейки симуляции пожара глобально или в радиусе. |
+| `/testmultiblock <x y z> <maxBlocks>` | Создать физический летающий кластер обломков из существующего здания. |
+
+---
+
+## 🛠️ Сборка из исходников
+
+Если вы хотите собрать мод самостоятельно:
 ```bash
+git clone <URL_РЕПОЗИТОРИЯ>
+cd project-explosive
 ./gradlew build
 ```
-
-The compiled mod JAR will be located in:
-```
-build/libs/project-explosive-1.0.0.jar
-```
+Готовый файл мода появится в `build/libs/project-explosive-1.0.0.jar`.
 
 ---
 
-## 🤖 CI / CD Pipeline
+## 🤖 CI / CD (GitHub Actions)
 
-This repository includes automated GitHub Actions workflows:
-- **`.github/workflows/build.yml`**: Runs `./gradlew build` on every push or pull request to `main`/`master`, ensuring compile safety and saving JAR build artifacts.
-- **`.github/workflows/release.yml`**: Automatically builds and publishes a GitHub Release with attached JAR artifacts whenever a version tag (`v*`) is pushed.
-
----
-
-## 📜 License & Credits
-
-- Original mod concept & assets by the *Project: Explosive* development team.
-- Fabric & Polymer server-side port created with automated agentic engineering.
+В репозитории настроены готовые сценарии:
+1. **`.github/workflows/build.yml`**: Проверяет компиляцию при каждом Push и Pull Request.
+2. **`.github/workflows/release.yml`**: При пуше тега версии (`v1.0.0` и т.д.) или ручном запуске через кнопку *Run workflow* собирает мод, помечает релиз как **Latest** и загружает стабильный артефакт `project-explosive-fabric.jar`.

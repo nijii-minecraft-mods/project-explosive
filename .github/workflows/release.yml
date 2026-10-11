@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -14,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout tagged source
+      - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Set up Java 21
@@ -32,10 +33,32 @@ jobs:
       - name: Build mod
         run: ./gradlew build --no-daemon
 
-      - name: Create GitHub Release
+      - name: Prepare static release artifacts
+        run: |
+          mkdir -p release-dist
+          # Primary mod jar without sources
+          MAIN_JAR=$(ls build/libs/project-explosive-*.jar | grep -v "sources" | head -n 1)
+          echo "Found primary JAR: $MAIN_JAR"
+          
+          # 1. Keep versioned jar
+          cp "$MAIN_JAR" release-dist/
+          
+          # 2. Static unchanging name for direct permanent downloads
+          cp "$MAIN_JAR" release-dist/project-explosive-fabric.jar
+          
+          # 3. Sources jar
+          SOURCES_JAR=$(ls build/libs/*sources.jar 2>/dev/null || true)
+          if [ -n "$SOURCES_JAR" ]; then
+            cp $SOURCES_JAR release-dist/
+          fi
+          
+          ls -la release-dist/
+
+      - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/libs/*.jar
+          files: release-dist/*
           fail_on_unmatched_files: true
           generate_release_notes: true
+          make_latest: true
           prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}

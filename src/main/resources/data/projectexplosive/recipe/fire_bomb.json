@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "SCS",
+    " F "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:blaze_powder"
+    },
+    "S": {
+      "item": "projectexplosive:sulfur"
+    },
+    "C": {
+      "item": "projectexplosive:bomb_casing"
+    },
+    "F": {
+      "item": "minecraft:fire_charge"
+    }
+  },
+  "result": {
+    "id": "projectexplosive:fire_bomb",
+    "count": 1
+  }
+}

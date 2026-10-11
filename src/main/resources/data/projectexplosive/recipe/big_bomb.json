@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " H ",
+    "ICI",
+    " G "
+  ],
+  "key": {
+    "H": {
+      "item": "projectexplosive:big_bomb_head"
+    },
+    "C": {
+      "item": "projectexplosive:bomb_casing"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    }
+  },
+  "result": {
+    "id": "projectexplosive:big_bomb",
+    "count": 1
+  }
+}

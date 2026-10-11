@@ -1,9 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "projectexplosive:experimental_fire"
-    }
-  ],
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "IBF",
@@ -22,7 +17,7 @@
     }
   },
   "result": {
-    "count": 1,
-    "id": "projectexplosive:flamethrower"
+    "id": "projectexplosive:flamethrower",
+    "count": 1
   }
 }

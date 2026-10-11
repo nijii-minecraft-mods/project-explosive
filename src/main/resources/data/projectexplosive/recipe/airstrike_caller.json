@@ -1,29 +1,26 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "BRB",
-    "IEI",
-    "IDI"
+    " S ",
+    "IGI",
+    " R "
   ],
   "key": {
-    "B": {
-      "item": "minecraft:blaze_rod"
-    },
-    "R": {
-      "item": "minecraft:redstone"
+    "S": {
+      "item": "minecraft:spyglass"
     },
     "I": {
       "item": "minecraft:iron_ingot"
     },
-    "E": {
-      "item": "minecraft:ender_eye"
+    "G": {
+      "item": "projectexplosive:guidance_computer"
     },
-    "D": {
-      "item": "minecraft:diamond"
+    "R": {
+      "item": "minecraft:redstone"
     }
   },
   "result": {
-    "count": 1,
-    "id": "projectexplosive:airstrike_caller"
+    "id": "projectexplosive:airstrike_caller",
+    "count": 1
   }
 }

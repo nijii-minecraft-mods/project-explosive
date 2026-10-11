@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " H ",
+    " C ",
+    " G "
+  ],
+  "key": {
+    "H": {
+      "item": "projectexplosive:small_bomb_head"
+    },
+    "C": {
+      "item": "projectexplosive:bomb_casing"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    }
+  },
+  "result": {
+    "id": "projectexplosive:small_bomb",
+    "count": 1
+  }
+}
