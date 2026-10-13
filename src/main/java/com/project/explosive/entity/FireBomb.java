@@ -2,12 +2,14 @@ package com.project.explosive.entity;
 
 import com.project.explosive.particle.ModParticles;
 import com.project.explosive.sound.ModSounds;
+import com.project.explosive.util.DelayedTaskScheduler;
 import com.project.explosive.util.FirePropagationManager;
 import com.project.explosive.util.ParticleUtil;
 import com.project.explosive.util.SoundUtil;
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.PlantBlock;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
@@ -34,15 +36,11 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
         super(entityType, world);
     }
 
-    public FireBomb(World world, LivingEntity owner) {
-        super(ModEntities.RAW_FIRE_BOMB, owner, world);
+    public FireBomb(World world, LivingEntity thrower) {
+        super(ModEntities.RAW_FIRE_BOMB, thrower, world);
     }
 
     public FireBomb(World world, double x, double y, double z) {
-        super(ModEntities.RAW_FIRE_BOMB, x, y, z, world);
-    }
-
-    public FireBomb(World world, double x, double y, double z, boolean triggeredByBomb) {
         super(ModEntities.RAW_FIRE_BOMB, x, y, z, world);
     }
 
@@ -65,44 +63,50 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
         super.tick();
         this.fallTime++;
 
-        if (!this.getWorld().isClient()) {
-            ServerWorld serverLevel = (ServerWorld) this.getWorld();
+        if (this.getWorld().isClient()) {
+            return;
+        }
 
-            if (this.fallTime % 2 == 0) {
-                Vec3d v = this.getVelocity();
-                for (int i = 0; i < 4; i++) {
-                    double ox = (serverLevel.getRandom().nextDouble() - 0.5) * 0.55;
-                    double oy = (serverLevel.getRandom().nextDouble() - 0.5) * 0.55;
-                    double oz = (serverLevel.getRandom().nextDouble() - 0.5) * 0.55;
-                    double sizeVy = 0.06 + serverLevel.getRandom().nextDouble() * 0.07;
-                    ParticleUtil.spawnLongDistanceParticles(
-                            serverLevel, ModParticles.FIRE_FLAME,
-                            this.getX() + ox, this.getY() + 0.2 + oy, this.getZ() + oz,
-                            1, -v.x * 0.08, sizeVy, -v.z * 0.08
-                    );
-                }
+        ServerWorld serverLevel = (ServerWorld) this.getWorld();
 
+        // Fiery flight trail
+        if (this.fallTime % 2 == 0) {
+            Vec3d v = this.getVelocity();
+            for (int i = 0; i < 3; i++) {
+                double ox = (serverLevel.getRandom().nextDouble() - 0.5) * 0.4;
+                double oy = (serverLevel.getRandom().nextDouble() - 0.5) * 0.4;
+                double oz = (serverLevel.getRandom().nextDouble() - 0.5) * 0.4;
                 ParticleUtil.spawnLongDistanceParticles(
-                        serverLevel, ModParticles.FIRE_SMOKE,
-                        this.getX() - v.x * 0.35, this.getY() + 0.2 - v.y * 0.35, this.getZ() - v.z * 0.35,
-                        1, 0.02, 0.05, 0.02
+                        serverLevel, ModParticles.FIRE_FLAME,
+                        this.getX() + ox, this.getY() + 0.2 + oy, this.getZ() + oz,
+                        1, -v.x * 0.1, 0.05, -v.z * 0.1
                 );
+            }
+            serverLevel.spawnParticles(
+                    ParticleTypes.LAVA,
+                    this.getX(), this.getY() + 0.2, this.getZ(),
+                    1, 0.05, 0.05, 0.05, 0.0
+            );
+            ParticleUtil.spawnLongDistanceParticles(
+                    serverLevel, ModParticles.FIRE_SMOKE,
+                    this.getX() - v.x * 0.3, this.getY() + 0.2 - v.y * 0.3, this.getZ() - v.z * 0.3,
+                    1, 0.02, 0.04, 0.02
+            );
+        }
 
-                for (int i = 0; i < 2; i++) {
-                    ParticleUtil.spawnLongDistanceParticles(
-                            serverLevel, ModParticles.EMBER,
-                            this.getX(), this.getY() + 0.2, this.getZ(),
-                            1, (serverLevel.getRandom().nextDouble() - 0.5) * 0.25, 0.1, (serverLevel.getRandom().nextDouble() - 0.5) * 0.25
-                    );
+        if (this.fallTime > 200 && !this.hasExploded) {
+            this.explode();
+            return;
+        }
+
+        if (!this.hasExploded) {
+            if (this.isOnGround()) {
+                this.explode();
+            } else {
+                int groundY = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, MathHelper.floor(this.getX()), MathHelper.floor(this.getZ()));
+                if (this.getY() - (double) groundY <= 1.5) {
+                    this.explode();
                 }
-            }
-
-            if (this.fallTime > 200 && !this.hasExploded) {
-                this.explode();
-            }
-
-            if (!this.hasExploded && this.isOnGround()) {
-                this.explode();
             }
         }
     }
@@ -119,30 +123,34 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
         if (this.hasExploded) {
             return;
         }
-
         this.hasExploded = true;
+
         if (this.getWorld() instanceof ServerWorld serverLevel) {
             double bx = this.getX();
             double by = this.getY();
             double bz = this.getZ();
 
-            // Sounds: ModSounds.FIRE_BOMB_EXPLOSION and vanilla sounds
-            SoundUtil.playAt(serverLevel, bx, by, bz, SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.NEUTRAL, 1.5F, 0.8F + serverLevel.getRandom().nextFloat() * 0.4F);
-            SoundUtil.playAt(serverLevel, bx, by, bz, SoundEvents.ENTITY_GENERIC_EXPLODE.value(), SoundCategory.NEUTRAL, 2.0F, 0.6F);
-            SoundUtil.playAt(serverLevel, bx, by, bz, SoundEvents.ENTITY_DRAGON_FIREBALL_EXPLODE, SoundCategory.NEUTRAL, 2.0F, 1.0F);
-            SoundUtil.playDelayed(serverLevel, bx, by, bz, ModSounds.FIRE_BOMB_EXPLOSION, SoundCategory.BLOCKS, 3.5F, 1.0F);
+            // Layered impactful audio
+            SoundUtil.playAt(serverLevel, bx, by, bz, SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.NEUTRAL, 2.0F, 0.9F);
+            SoundUtil.playAt(serverLevel, bx, by, bz, SoundEvents.ENTITY_GENERIC_EXPLODE.value(), SoundCategory.BLOCKS, 2.8F, 0.65F);
+            SoundUtil.playAt(serverLevel, bx, by, bz, SoundEvents.ENTITY_DRAGON_FIREBALL_EXPLODE, SoundCategory.BLOCKS, 2.5F, 1.0F);
+            SoundUtil.playAt(serverLevel, bx, by, bz, SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.BLOCKS, 2.5F, 0.8F);
+            SoundUtil.playDelayed(serverLevel, bx, by, bz, ModSounds.FIRE_BOMB_EXPLOSION, SoundCategory.BLOCKS, 4.0F, 0.9F);
 
-            // Detonates with fire spread (FirePropagationManager)
-            FirePropagationManager.getInstance().startFirePropagation(serverLevel, bx, by, bz, 28, 6.0);
-
-            // Ignites ground in radius
-            igniteGroundInRadius(serverLevel, bx, by, bz, 7);
-
-            // Bursts flame particles
+            // 1. Spectacular volcanic visuals
             burstFlameParticles(serverLevel, bx, by, bz);
 
-            // Ignites nearby entities
-            igniteNearbyEntities(serverLevel, bx, by, bz, 8.0);
+            // 2. Blanket ground in real Minecraft fire
+            igniteGroundInRadius(serverLevel, bx, by, bz, 8);
+
+            // 3. Arcing secondary napalm splashes (spatters burning liquid outward)
+            launchNapalmSplashes(serverLevel, bx, by, bz);
+
+            // 4. Start thermodynamic wildfire simulation
+            FirePropagationManager.getInstance().startFirePropagation(serverLevel, bx, by, bz, 30, 8.0);
+
+            // 5. Heavy burning damage and knockback to entities
+            igniteNearbyEntities(serverLevel, bx, by, bz, 9.0);
         }
 
         this.discard();
@@ -152,7 +160,8 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
         BlockPos center = BlockPos.ofFloored(cx, cy, cz);
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
-                if (dx * dx + dz * dz <= radius * radius) {
+                double distSq = dx * dx + dz * dz;
+                if (distSq <= radius * radius) {
                     int wx = center.getX() + dx;
                     int wz = center.getZ() + dz;
                     int topY = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, wx, wz);
@@ -162,9 +171,22 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
                     BlockState groundState = serverLevel.getBlockState(groundPos);
                     BlockState fireState = serverLevel.getBlockState(firePos);
 
-                    if (fireState.isAir() && (groundState.isSolidBlock(serverLevel, groundPos) || groundState.isIn(BlockTags.LOGS) || groundState.isIn(BlockTags.LEAVES))) {
-                        if (serverLevel.getRandom().nextFloat() < 0.65F) {
-                            serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 3);
+                    // If non-solid foliage (grass, flowers), consume it directly with fire
+                    if (groundState.getBlock() instanceof PlantBlock) {
+                        serverLevel.setBlockState(groundPos, Blocks.FIRE.getDefaultState(), 3);
+                        continue;
+                    }
+
+                    if (fireState.isAir() && (groundState.isSolidBlock(serverLevel, groundPos)
+                            || groundState.isIn(BlockTags.LOGS)
+                            || groundState.isIn(BlockTags.LEAVES)
+                            || groundState.isIn(BlockTags.PLANKS))) {
+                        // 75% coverage at center, tapering outward
+                        double prob = 0.85 - (Math.sqrt(distSq) / (double) radius) * 0.35;
+                        if (serverLevel.getRandom().nextDouble() < prob) {
+                            if (Blocks.FIRE.getDefaultState().canPlaceAt(serverLevel, firePos)) {
+                                serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 3);
+                            }
                         }
                     }
                 }
@@ -172,52 +194,62 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
         }
     }
 
+    private void launchNapalmSplashes(ServerWorld serverLevel, double cx, double cy, double cz) {
+        int splashes = 12;
+        for (int i = 0; i < splashes; i++) {
+            double angle = (Math.PI * 2) * (double) i / (double) splashes + (serverLevel.getRandom().nextDouble() - 0.5) * 0.3;
+            double distance = 6.0 + serverLevel.getRandom().nextDouble() * 10.0;
+            long delay = (long) (2 + serverLevel.getRandom().nextInt(8));
+
+            double targetX = cx + Math.cos(angle) * distance;
+            double targetZ = cz + Math.sin(angle) * distance;
+
+            DelayedTaskScheduler.schedule(serverLevel, delay, () -> {
+                int groundY = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, MathHelper.floor(targetX), MathHelper.floor(targetZ));
+                BlockPos firePos = new BlockPos(MathHelper.floor(targetX), groundY, MathHelper.floor(targetZ));
+
+                // Splash effects at landing point
+                serverLevel.spawnParticles(ParticleTypes.LAVA, targetX, (double) groundY + 0.3, targetZ, 4, 0.3, 0.3, 0.3, 0.0);
+                serverLevel.spawnParticles(ParticleTypes.FLAME, targetX, (double) groundY + 0.2, targetZ, 8, 0.4, 0.2, 0.4, 0.05);
+
+                if (serverLevel.getBlockState(firePos).isAir()) {
+                    BlockPos below = firePos.down();
+                    if (!serverLevel.getBlockState(below).isAir() && Blocks.FIRE.getDefaultState().canPlaceAt(serverLevel, firePos)) {
+                        serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 3);
+                    }
+                }
+            });
+        }
+    }
+
     private void burstFlameParticles(ServerWorld serverLevel, double cx, double cy, double cz) {
-        // Flash
-        serverLevel.spawnParticles(ParticleTypes.FLASH, cx, cy + 0.5, cz, 4, 0.2, 0.2, 0.2, 0.0);
+        // 1. Initial blinding flash
+        serverLevel.spawnParticles(ParticleTypes.FLASH, cx, cy + 1.0, cz, 4, 0.3, 0.3, 0.3, 0.0);
 
-        // Sparks
-        for (int i = 0; i < 45; i++) {
-            double theta = serverLevel.getRandom().nextDouble() * 2.0 * Math.PI;
-            double phi = Math.acos(2.0 * serverLevel.getRandom().nextDouble() - 1.0);
-            double speed = 1.2 + serverLevel.getRandom().nextDouble() * 1.8;
-            double vx = Math.sin(phi) * Math.cos(theta) * speed;
-            double vy = Math.sin(phi) * Math.sin(theta) * speed * 0.6 + 0.3;
-            double vz = Math.cos(phi) * speed;
-            ParticleUtil.spawnLongDistanceParticles(serverLevel, ModParticles.SPARK, cx, cy + 0.4, cz, 1, vx, vy, vz);
+        // 2. Exploding napalm droplets (Lava sparks)
+        serverLevel.spawnParticles(ParticleTypes.LAVA, cx, cy + 1.0, cz, 40, 1.8, 1.4, 1.8, 0.15);
+
+        // 3. Central billowing firestorm
+        serverLevel.spawnParticles(ParticleTypes.FLAME, cx, cy + 0.8, cz, 75, 2.5, 1.8, 2.5, 0.12);
+
+        // 4. Volcanic smoke plume rising 25 blocks into sky
+        for (int h = 0; h < 20; h += 2) {
+            double spread = 0.8 + (double) h * 0.15;
+            serverLevel.spawnParticles(
+                    ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                    cx, cy + (double) h + 1.0, cz,
+                    3, spread, 0.6, spread, 0.05
+            );
         }
 
-        // Flames burst
-        for (int i = 0; i < 80; i++) {
-            double angle = serverLevel.getRandom().nextDouble() * 2.0 * Math.PI;
-            double phi = serverLevel.getRandom().nextDouble() * Math.PI;
-            double speed = 0.5 + serverLevel.getRandom().nextDouble() * 1.8;
-            double vx = Math.sin(phi) * Math.cos(angle) * speed;
-            double vy = Math.cos(phi) * speed;
-            double vz = Math.sin(phi) * Math.sin(angle) * speed;
-            ParticleUtil.spawnLongDistanceParticles(serverLevel, ModParticles.FIRE_FLAME, cx, cy, cz, 1, vx, vy, vz);
-            if (i % 2 == 0) {
-                ParticleUtil.spawnLongDistanceParticles(serverLevel, ModParticles.EMBER, cx, cy, cz, 1, vx * 0.8, vy * 0.8, vz * 0.8);
-            }
-        }
-
-        // Ring of fire
-        int ringCount = 48;
+        // 5. Radial shockwave ring of fire on ground
+        int ringCount = 36;
         for (int i = 0; i < ringCount; i++) {
             double a = (Math.PI * 2) * (double) i / (double) ringCount;
-            double rSpeed = 1.4 + serverLevel.getRandom().nextDouble() * 0.6;
+            double rSpeed = 1.6 + serverLevel.getRandom().nextDouble() * 0.5;
             double rx = Math.cos(a) * rSpeed;
             double rz = Math.sin(a) * rSpeed;
-            ParticleUtil.spawnLongDistanceParticles(serverLevel, ModParticles.FIRE_FLAME, cx, cy + 0.2, cz, 1, rx, 0.1, rz);
-        }
-
-        // Smoke column
-        for (int i = 0; i < 30; i++) {
-            double a = serverLevel.getRandom().nextDouble() * 2.0 * Math.PI;
-            double rr = serverLevel.getRandom().nextDouble() * 1.5;
-            double px = cx + Math.cos(a) * rr;
-            double pz = cz + Math.sin(a) * rr;
-            ParticleUtil.spawnLongDistanceParticles(serverLevel, ModParticles.FIRE_SMOKE, px, cy + 0.5, pz, 1, 0.0, 0.25, 0.0);
+            ParticleUtil.spawnLongDistanceParticles(serverLevel, ModParticles.FIRE_FLAME, cx, cy + 0.3, cz, 2, rx, 0.1, rz);
         }
     }
 
@@ -227,8 +259,12 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
             double dist = Math.sqrt(target.squaredDistanceTo(cx, cy, cz));
             if (dist <= radius) {
                 float prox = (float) (1.0 - dist / radius);
-                target.setFireTicks((int) (160 * prox + 60));
-                target.damage(serverLevel.getDamageSources().onFire(), 5.0F + prox * 10.0F);
+                target.setFireTicks((int) (200 * prox + 80));
+                target.damage(serverLevel.getDamageSources().onFire(), 8.0F + prox * 14.0F);
+
+                // Knockback outward
+                Vec3d dir = target.getPos().subtract(cx, cy, cz).normalize();
+                target.addVelocity(dir.x * (0.8 + prox * 1.2), 0.35 + prox * 0.3, dir.z * (0.8 + prox * 1.2));
             }
         }
     }

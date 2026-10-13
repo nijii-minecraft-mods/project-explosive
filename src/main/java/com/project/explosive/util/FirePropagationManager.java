@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
+import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FireBlock;
@@ -627,6 +628,7 @@ public class FirePropagationManager {
         }
 
         private void extinguishFire(BlockPos pos, boolean playSteamEffects) {
+            this.removeMinecraftFire(pos);
             this.setState(pos, FirePropagationManager.FirePropagationSystem.CellState.EMPTY);
             if (playSteamEffects) {
                 if (this.level.getRandom().nextDouble() < 0.6) {
@@ -1184,11 +1186,52 @@ public class FirePropagationManager {
             switch (state) {
                 case PARTICLE_FIRE:
                     if (this.level.isChunkLoaded(pos)) {
+                        this.placeMinecraftFire(pos);
                         this.spawnFireParticles(pos);
                     }
+                    break;
+                case BURNED:
+                    if (this.level.isChunkLoaded(pos)) {
+                        this.removeMinecraftFire(pos);
+                    }
+                    break;
                 case EMPTY:
                 case INFLAMMABLE:
-                case BURNED:
+                    break;
+            }
+        }
+
+        private void placeMinecraftFire(BlockPos pos) {
+            BlockState cur = this.level.getBlockState(pos);
+            if (cur.isAir()) {
+                BlockPos down = pos.down();
+                BlockState downState = this.level.getBlockState(down);
+                if (!downState.isAir() && (downState.isSolidBlock(this.level, down) || this.isWoodBlock(downState) || this.isLeafBlock(downState) || this.isGrassBlock(downState))) {
+                    if (Blocks.FIRE.getDefaultState().canPlaceAt(this.level, pos)) {
+                        this.level.setBlockState(pos, Blocks.FIRE.getDefaultState(), 3);
+                        return;
+                    }
+                }
+            } else if (this.isPlantBlock(cur)) {
+                this.level.setBlockState(pos, Blocks.FIRE.getDefaultState(), 3);
+                return;
+            }
+
+            BlockPos above = pos.up();
+            if (this.level.getBlockState(above).isAir() && (cur.isSolidBlock(this.level, pos) || this.isWoodBlock(cur) || this.isLeafBlock(cur) || this.isGrassBlock(cur))) {
+                if (Blocks.FIRE.getDefaultState().canPlaceAt(this.level, above)) {
+                    this.level.setBlockState(above, Blocks.FIRE.getDefaultState(), 3);
+                }
+            }
+        }
+
+        private void removeMinecraftFire(BlockPos pos) {
+            if (this.level.getBlockState(pos).getBlock() instanceof AbstractFireBlock) {
+                this.level.removeBlock(pos, false);
+            }
+            BlockPos above = pos.up();
+            if (this.level.getBlockState(above).getBlock() instanceof AbstractFireBlock) {
+                this.level.removeBlock(above, false);
             }
         }
 

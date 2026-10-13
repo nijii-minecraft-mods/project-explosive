@@ -10,6 +10,7 @@ import com.project.explosive.util.BlastCrumble;
 import com.project.explosive.util.BombChunkTickets;
 import com.project.explosive.util.CraterUtil;
 import com.project.explosive.util.DelayedTaskScheduler;
+import com.project.explosive.util.FirePropagationManager;
 import com.project.explosive.util.ParticleUtil;
 import com.project.explosive.util.SoundUtil;
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
@@ -409,7 +410,12 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
             BlockState groundState = serverLevel.getBlockState(groundPos);
             BlockState fireState = serverLevel.getBlockState(firePos);
             if (fireState.isAir() && (groundState.isIn(BlockTags.LOGS) || groundState.isIn(BlockTags.PLANKS) || groundState.isIn(BlockTags.LEAVES) || groundState.isSolidBlock(serverLevel, groundPos))) {
-                serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 3);
+                if (Blocks.FIRE.getDefaultState().canPlaceAt(serverLevel, firePos)) {
+                    serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 3);
+                    if (i % 60 == 0) {
+                        FirePropagationManager.getInstance().startFirePropagation(serverLevel, wx, wy, wz, 25);
+                    }
+                }
             }
         }
     }
