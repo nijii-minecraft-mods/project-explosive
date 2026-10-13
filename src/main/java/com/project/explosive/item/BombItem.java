@@ -56,18 +56,20 @@ public class BombItem extends Item implements PolymerItem {
                 initialVelocity = look.multiply(1.2);
             } else {
                 // High-altitude drop
-                BlockPos groundHit = BombTargeting.findGroundTarget(serverWorld, player, 10000.0);
+                BlockPos groundHit = BombTargeting.findGroundTarget(serverWorld, player, 256.0);
                 if (groundHit != null) {
-                    spawnPosition = groundHit.toCenterPos().add(0.0, 200.0, 0.0);
+                    spawnPosition = groundHit.toCenterPos().add(0.0, 150.0, 0.0);
                 } else {
-                    HitResult hitResult = player.raycast(10000.0, 0.0F, false);
-                    spawnPosition = hitResult.getPos().add(0.0, 200.0, 0.0);
+                    HitResult hitResult = player.raycast(128.0, 0.0F, false);
+                    spawnPosition = hitResult.getPos().add(0.0, 150.0, 0.0);
                 }
-                initialVelocity = new Vec3d(0.0, -0.5, 0.0);
+                initialVelocity = new Vec3d(0.0, -0.6, 0.0);
 
                 int scx = MathHelper.floor(spawnPosition.x) >> 4;
                 int scz = MathHelper.floor(spawnPosition.z) >> 4;
-                serverWorld.getChunk(scx, scz);
+                if (!serverWorld.isChunkLoaded(scx, scz)) {
+                    serverWorld.getChunk(scx, scz);
+                }
                 BombChunkTickets.forceTemporary(serverWorld, BlockPos.ofFloored(spawnPosition.x, 0, spawnPosition.z), 1, 200);
             }
 

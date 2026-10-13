@@ -1,33 +1,7 @@
 {
-  "loader": "neoforge:separate_transforms",
-  "base": {
-    "parent": "minecraft:item/spyglass_in_hand",
-    "textures": {
-      "spyglass": "projectexplosive:item/designator_model",
-      "particle": "projectexplosive:item/designator_model"
-    }
-  },
-  "perspectives": {
-    "gui": {
-      "parent": "minecraft:item/generated",
-      "textures": {
-        "layer0": "minecraft:item/spyglass",
-        "layer1": "projectexplosive:item/icbm_overlay"
-      }
-    },
-    "ground": {
-      "parent": "minecraft:item/generated",
-      "textures": {
-        "layer0": "minecraft:item/spyglass",
-        "layer1": "projectexplosive:item/icbm_overlay"
-      }
-    },
-    "fixed": {
-      "parent": "minecraft:item/generated",
-      "textures": {
-        "layer0": "minecraft:item/spyglass",
-        "layer1": "projectexplosive:item/icbm_overlay"
-      }
-    }
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "projectexplosive:item/icbm_nuclear",
+    "layer1": "projectexplosive:item/icbm_overlay"
   }
 }

@@ -34,80 +34,83 @@ public final class CraterUtil {
             return;
         }
 
+        // Clamp radius to a safe maximum to prevent server main-thread freeze
+        double safeRadius = Math.min(radius, 32.0);
+        int maxSafeChunks = Math.min(maxChunks, 6);
+
         int baseX = MathHelper.floor(cx);
         int baseZ = MathHelper.floor(cz);
-        int r = MathHelper.ceil(radius);
-        double maxDepth = radius * depthRatio;
-        double r2 = radius * radius;
+        int r = MathHelper.ceil(safeRadius);
+        double maxDepth = safeRadius * Math.min(depthRatio, 0.45);
+        double r2 = safeRadius * safeRadius;
         double invR2 = 1.0 / r2;
         Random rnd = level.getRandom();
-        Map<BlockPos, BlockState> craterBlocks = new HashMap<>(r * r);
+
+        Map<BlockPos, BlockState> ejectaCandidateBlocks = new HashMap<>();
         BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+        BlockState air = Blocks.AIR.getDefaultState();
 
         for (int dx = -r; dx <= r; dx++) {
             double dxSq = (double) dx * (double) dx;
-            if (!(dxSq > r2)) {
-                int maxDz = (int) Math.sqrt(r2 - dxSq);
-                int wx = baseX + dx;
+            if (dxSq > r2) {
+                continue;
+            }
+            int maxDz = (int) Math.sqrt(r2 - dxSq);
+            int wx = baseX + dx;
 
-                for (int dz = -maxDz; dz <= maxDz; dz++) {
-                    double distSq = dxSq + (double) dz * (double) dz;
-                    if (!(distSq > r2)) {
-                        int wz = baseZ + dz;
-                        int colDepth = (int) Math.round(maxDepth * (1.0 - distSq * invR2));
-                        if (colDepth >= 1) {
-                            int surfaceY = level.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, wx, wz) - 1;
-                            mutablePos.set(wx, surfaceY + 1, wz);
-                            if (level.getBlockState(mutablePos).getBlock() instanceof PlantBlock) {
-                                level.setBlockState(mutablePos, Blocks.AIR.getDefaultState(), 18);
-                                mutablePos.set(wx, surfaceY + 2, wz);
-                                if (level.getBlockState(mutablePos).getBlock() instanceof PlantBlock) {
-                                    level.setBlockState(mutablePos, Blocks.AIR.getDefaultState(), 18);
-                                }
-                            }
+            for (int dz = -maxDz; dz <= maxDz; dz++) {
+                double distSq = dxSq + (double) dz * (double) dz;
+                if (distSq > r2) {
+                    continue;
+                }
+                int wz = baseZ + dz;
+                int colDepth = (int) Math.round(maxDepth * (1.0 - distSq * invR2));
+                if (colDepth < 1) {
+                    continue;
+                }
 
-                            int bottomY = surfaceY - colDepth;
+                int surfaceY = level.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, wx, wz) - 1;
+                mutablePos.set(wx, surfaceY + 1, wz);
+                if (level.getBlockState(mutablePos).getBlock() instanceof PlantBlock) {
+                    level.setBlockState(mutablePos, air, 18);
+                }
 
-                            for (int wy = bottomY; wy <= surfaceY; wy++) {
-                                mutablePos.set(wx, wy, wz);
-                                BlockState state = level.getBlockState(mutablePos);
-                                if (!state.isAir()
-                                        && !state.isOf(Blocks.BEDROCK)
-                                        && state.getFluidState().isEmpty()
-                                        && !(state.getHardness(level, mutablePos) < 0.0F)) {
-                                    craterBlocks.put(mutablePos.toImmutable(), state);
-                                }
-                            }
+                int bottomY = Math.max(level.getBottomY() + 1, surfaceY - colDepth);
+
+                for (int wy = bottomY; wy <= surfaceY; wy++) {
+                    mutablePos.set(wx, wy, wz);
+                    BlockState state = level.getBlockState(mutablePos);
+                    if (!state.isAir() && !state.isOf(Blocks.BEDROCK)) {
+                        // Keep a fraction of upper blocks as candidates for tumbling physics ejecta
+                        if (wy >= surfaceY - 2 && ejectaCandidateBlocks.size() < 400 && rnd.nextFloat() < 0.4F) {
+                            ejectaCandidateBlocks.put(mutablePos.toImmutable(), state);
                         }
+                        // Clear crater block directly (flag 18 = notify client, no physics neighbor cascade)
+                        level.setBlockState(mutablePos, air, 18);
                     }
                 }
             }
         }
 
-        if (!craterBlocks.isEmpty()) {
-            Set<BlockPos> remaining = new HashSet<>(craterBlocks.keySet());
-            List<BlockPos> seeds = new ArrayList<>(craterBlocks.keySet());
+        // Launch physics debris clusters
+        if (!ejectaCandidateBlocks.isEmpty() && maxSafeChunks > 0) {
+            Set<BlockPos> remaining = new HashSet<>(ejectaCandidateBlocks.keySet());
+            List<BlockPos> seeds = new ArrayList<>(ejectaCandidateBlocks.keySet());
             Collections.shuffle(seeds, new java.util.Random(rnd.nextLong()));
             List<CraterUtil.Cluster> clusters = new ArrayList<>();
 
             for (BlockPos seed : seeds) {
-                if (clusters.size() >= maxChunks) {
+                if (clusters.size() >= maxSafeChunks) {
                     break;
                 }
-
                 if (remaining.contains(seed)) {
-                    int target = 14 + rnd.nextInt(17);
-                    clusters.add(growIrregularCluster(seed, remaining, craterBlocks, target, cx, cz, rnd));
+                    int target = 8 + rnd.nextInt(12);
+                    clusters.add(growIrregularCluster(seed, remaining, ejectaCandidateBlocks, target, cx, cz, rnd));
                 }
-            }
-
-            BlockState air = Blocks.AIR.getDefaultState();
-            for (BlockPos pos : craterBlocks.keySet()) {
-                level.setBlockState(pos, air, 18);
             }
 
             for (CraterUtil.Cluster c : clusters) {
-                launchCluster(level, c, cx, cz, radius, forceScale);
+                launchCluster(level, c, cx, cz, safeRadius, forceScale);
             }
         }
     }
@@ -130,7 +133,6 @@ public final class CraterUtil {
                 if (c.blocks.size() >= target) {
                     break;
                 }
-
                 BlockPos n = cur.offset(d);
                 if (remaining.contains(n) && rnd.nextFloat() < 0.82F) {
                     remaining.remove(n);
@@ -224,7 +226,11 @@ public final class CraterUtil {
             if (this.min == null) {
                 this.min = p;
             } else {
-                this.min = new BlockPos(Math.min(this.min.getX(), p.getX()), Math.min(this.min.getY(), p.getY()), Math.min(this.min.getZ(), p.getZ()));
+                this.min = new BlockPos(
+                        Math.min(this.min.getX(), p.getX()),
+                        Math.min(this.min.getY(), p.getY()),
+                        Math.min(this.min.getZ(), p.getZ())
+                );
             }
         }
     }

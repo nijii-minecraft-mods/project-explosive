@@ -67,8 +67,9 @@ public final class BlastCrumble {
             return;
         }
 
-        int r = MathHelper.ceil(radius);
-        double r2 = radius * radius;
+        double safeRadius = Math.min(radius, 32.0);
+        int r = MathHelper.ceil(safeRadius);
+        double r2 = safeRadius * safeRadius;
         int bx = MathHelper.floor(cx);
         int by = MathHelper.floor(cy);
         int bz = MathHelper.floor(cz);

@@ -249,10 +249,10 @@ public class BigBomb extends ThrownEntity implements PolymerEntity {
         double craterScale = (double) (this.blastScale / 0.7F);
 
         // Large crater
-        CraterUtil.digCraterWithEjecta(serverLevel, bx, by, bz, 14.0 * craterScale, 0.5, 20, 1.4);
+        CraterUtil.digCraterWithEjecta(serverLevel, bx, by, bz, Math.min(16.0 * craterScale, 20.0), 0.45, 4, 1.3);
 
         // Structural crumble
-        BlastCrumble.blastAndCrumble(serverLevel, bx, by, bz, 18.0 * craterScale);
+        BlastCrumble.blastAndCrumble(serverLevel, bx, by, bz, Math.min(18.0 * craterScale, 22.0));
 
         // High damage & explosion
         serverLevel.createExplosion(this, bx, by, bz, 20.0F * (float) craterScale, World.ExplosionSourceType.TNT);

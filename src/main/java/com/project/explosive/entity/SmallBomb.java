@@ -248,10 +248,10 @@ public class SmallBomb extends ThrownEntity implements PolymerEntity {
         double craterScale = (double) (this.blastScale / 0.4F);
 
         // Moderate crater
-        CraterUtil.digCraterWithEjecta(serverLevel, bx, by, bz, 8.0 * craterScale, 0.55, 12, 1.1);
+        CraterUtil.digCraterWithEjecta(serverLevel, bx, by, bz, Math.min(8.0 * craterScale, 12.0), 0.5, 3, 1.0);
 
         // Moderate crumble
-        BlastCrumble.blastAndCrumble(serverLevel, bx, by, bz, 11.0 * craterScale);
+        BlastCrumble.blastAndCrumble(serverLevel, bx, by, bz, Math.min(10.0 * craterScale, 14.0));
 
         // Moderate damage & explosion
         serverLevel.createExplosion(this, bx, by, bz, 8.0F * (float) craterScale, World.ExplosionSourceType.TNT);

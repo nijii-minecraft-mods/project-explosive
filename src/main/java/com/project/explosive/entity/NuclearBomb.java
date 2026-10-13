@@ -268,14 +268,14 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
         applyFlashAndBlindness(serverLevel, boomX, boomY, boomZ);
 
         // 2. Spawns hemispherical crater via CraterUtil.digCraterWithEjecta(...)
-        int craterRadius = Math.max(20, (int) (55.0F * this.blastScale));
-        CraterUtil.digCraterWithEjecta(serverLevel, boomX, boomY, boomZ, craterRadius, 0.45, 30, 2.0);
+        int craterRadius = Math.max(16, (int) (32.0F * this.blastScale));
+        CraterUtil.digCraterWithEjecta(serverLevel, boomX, boomY, boomZ, craterRadius, 0.4, 6, 1.8);
 
         // 3. Spawns mushroom cloud via ParticleUtil.spawnMushroomCloud(...)
         ParticleUtil.spawnMushroomCloud(serverLevel, boomX, boomY, boomZ, (double) this.blastScale);
 
         // 4. Applies structural collapse via BlastCrumble.blastAndCrumble(...)
-        BlastCrumble.blastAndCrumble(serverLevel, boomX, boomY, boomZ, 60.0 * (double) this.blastScale);
+        BlastCrumble.blastAndCrumble(serverLevel, boomX, boomY, boomZ, 32.0 * (double) this.blastScale);
 
         // 5. Spawns radiation field via RadiationManager.addRadiationSource(...)
         RadiationManager.addRadiationSource(this.originPos, 900.0 * (double) this.blastScale, 24000);

@@ -44,12 +44,12 @@ public class AirstrikeCallerItem extends Item implements PolymerItem {
         ItemStack itemStack = player.getStackInHand(hand);
 
         if (!world.isClient() && world instanceof ServerWorld serverWorld) {
-            BlockPos ground = BombTargeting.findGroundTarget(serverWorld, player, 10000.0);
+            BlockPos ground = BombTargeting.findGroundTarget(serverWorld, player, 256.0);
             BlockPos targetPos;
             if (ground != null) {
                 targetPos = ground.up();
             } else {
-                HitResult hitResult = player.raycast(10000.0, 0.0F, false);
+                HitResult hitResult = player.raycast(128.0, 0.0F, false);
                 targetPos = hitResult.getType() == HitResult.Type.BLOCK
                         ? ((BlockHitResult) hitResult).getBlockPos().up()
                         : player.getBlockPos();

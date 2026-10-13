@@ -76,20 +76,23 @@ public class ICBMItem extends Item implements PolymerItem {
         }
 
         if (!world.isClient() && world instanceof ServerWorld serverWorld) {
-            BlockPos targetPos = BombTargeting.findGroundTarget(serverWorld, player, 10000.0);
+            BlockPos targetPos = BombTargeting.findGroundTarget(serverWorld, player, 384.0);
             if (targetPos == null) {
-                HitResult hitResult = player.raycast(10000.0, 0.0F, false);
+                HitResult hitResult = player.raycast(256.0, 0.0F, false);
                 targetPos = BlockPos.ofFloored(hitResult.getPos());
             }
 
             String explosionType = getExplosionType(itemStack);
             double angle = world.random.nextDouble() * 2.0 * Math.PI;
-            double distance = 500.0 + world.random.nextDouble() * 500.0;
+            double distance = 96.0 + world.random.nextDouble() * 64.0;
             double spawnX = player.getX() + Math.cos(angle) * distance;
             double spawnZ = player.getZ() + Math.sin(angle) * distance;
             int cx = (int) spawnX >> 4;
             int cz = (int) spawnZ >> 4;
-            serverWorld.getChunk(cx, cz);
+            if (!serverWorld.isChunkLoaded(cx, cz)) {
+                spawnX = player.getX() + Math.cos(angle) * 32.0;
+                spawnZ = player.getZ() + Math.sin(angle) * 32.0;
+            }
             BombChunkTickets.forceTemporary(serverWorld, new BlockPos((int) spawnX, 0, (int) spawnZ), 1, 200);
 
             int spawnY = serverWorld.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (int) spawnX, (int) spawnZ);
