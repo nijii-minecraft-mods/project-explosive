@@ -312,17 +312,44 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
     }
 
     private void applyFlashAndBlindness(ServerWorld serverLevel, double x, double y, double z) {
-        double maxFlashDistance = 500.0;
+        double maxFlashDistance = 384.0;
         for (ServerPlayerEntity player : serverLevel.getPlayers()) {
             double dist = Math.sqrt(player.squaredDistanceTo(x, y, z));
             if (dist <= maxFlashDistance) {
                 double prox = 1.0 - (dist / maxFlashDistance);
-                int darkDuration = (int) Math.max(100, 400 * prox);
-                int blindDuration = (int) Math.max(60, 300 * prox);
-                player.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, darkDuration, 0, false, false, true));
-                player.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, blindDuration, 0, false, false, true));
-                SoundUtil.playNotify(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS, 2.0F, 2.0F);
-                SoundUtil.playNotify(player, SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.PLAYERS, 1.8F, 2.0F);
+
+                // Stage 1 (Initial flash & shock): Short sharp flash instead of 20 seconds of black void
+                int flashDarkDuration = (int) Math.max(30, 60 * prox); // 1.5 - 3 seconds
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, flashDarkDuration, 0, false, false, true));
+
+                // Disorientation & shellshock (camera wobble & auditory ringing)
+                if (prox > 0.25) {
+                    player.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, (int) (120 * prox), 0, false, false, true));
+                    player.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, (int) (160 * prox), 0, false, false, true));
+                }
+
+                // Tinnitus / ear-ringing acoustic cues
+                SoundUtil.playNotify(player, SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.PLAYERS, 2.0F, 2.0F);
+                SoundUtil.playNotify(player, SoundEvents.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS, 1.8F, 1.9F);
+
+                // Stage 2 (Gray fallout blizzard & dust haze around player):
+                // Instead of pitch-black darkness, shower the player with gray & white ash particles over 6 seconds
+                for (int delay = 25; delay <= 125; delay += 15) {
+                    long d = delay;
+                    DelayedTaskScheduler.schedule(serverLevel, d, () -> {
+                        if (player.isAlive() && player.getWorld() == serverLevel) {
+                            Vec3d eye = player.getEyePos();
+                            Vec3d look = player.getRotationVector();
+                            // Spawn gray atmospheric fallout particles in front of player's face
+                            serverLevel.spawnParticles(player, ParticleTypes.WHITE_ASH, false,
+                                    eye.x + look.x * 1.5, eye.y + look.y * 1.5, eye.z + look.z * 1.5,
+                                    16, 1.2, 0.8, 1.2, 0.02);
+                            serverLevel.spawnParticles(player, ParticleTypes.ASH, false,
+                                    eye.x + look.x * 1.5, eye.y + look.y * 1.5, eye.z + look.z * 1.5,
+                                    12, 1.0, 0.8, 1.0, 0.01);
+                        }
+                    });
+                }
             }
         }
     }
