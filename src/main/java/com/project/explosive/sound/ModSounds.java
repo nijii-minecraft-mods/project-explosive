@@ -1,9 +1,6 @@
 package com.project.explosive.sound;
 
 import com.project.explosive.util.RegistrySupplier;
-import eu.pb4.polymer.rsm.api.RegistrySyncUtils;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 
@@ -36,10 +33,7 @@ public class ModSounds {
 
     private static SoundEvent register(String name) {
         Identifier id = Identifier.of("projectexplosive", name);
-        SoundEvent sound = SoundEvent.of(id);
-        Registry.register(Registries.SOUND_EVENT, id, sound);
-        RegistrySyncUtils.setServerEntry(Registries.SOUND_EVENT, sound);
-        return sound;
+        return SoundEvent.of(id);
     }
 
     public static void init() {

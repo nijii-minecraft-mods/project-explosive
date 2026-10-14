@@ -29,7 +29,31 @@ public final class SoundUtil {
     }
 
     public static void playAt(World level, double x, double y, double z, SoundEvent sound, SoundCategory source, float volume, float pitch) {
-        level.playSound(null, x, y, z, sound, source, volume, jitter(level, pitch));
+        if (level instanceof ServerWorld serverWorld) {
+            RegistryEntry<SoundEvent> directEntry = RegistryEntry.of(sound);
+            float pit = jitter(level, pitch);
+            long seed = level.getRandom().nextLong();
+            double maxDist = volume > 1.0F ? (double) (volume * 16.0F) : 16.0;
+            double maxDistSq = maxDist * maxDist;
+
+            for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+                double distSq = player.squaredDistanceTo(x, y, z);
+                if (distSq <= maxDistSq) {
+                    player.networkHandler.sendPacket(new PlaySoundS2CPacket(
+                            directEntry,
+                            source,
+                            x,
+                            y,
+                            z,
+                            volume,
+                            pit,
+                            seed
+                    ));
+                }
+            }
+        } else {
+            level.playSound(null, x, y, z, sound, source, volume, jitter(level, pitch));
+        }
     }
 
     public static void playAt(World level, double x, double y, double z, Supplier<SoundEvent> sound, SoundCategory source, float volume, float pitch) {
@@ -37,7 +61,16 @@ public final class SoundUtil {
     }
 
     public static void playNotify(ServerPlayerEntity player, SoundEvent sound, SoundCategory source, float volume, float pitch) {
-        player.playSoundToPlayer(sound, source, volume, jitter(player.getWorld(), pitch));
+        player.networkHandler.sendPacket(new PlaySoundS2CPacket(
+                RegistryEntry.of(sound),
+                source,
+                player.getX(),
+                player.getY(),
+                player.getZ(),
+                volume,
+                jitter(player.getWorld(), pitch),
+                player.getRandom().nextLong()
+        ));
     }
 
     public static void playNotify(ServerPlayerEntity player, Supplier<SoundEvent> sound, SoundCategory source, float volume, float pitch) {

@@ -3,6 +3,7 @@ package com.project.explosive.item;
 import com.project.explosive.sound.ModSounds;
 import com.project.explosive.util.BombChunkTickets;
 import com.project.explosive.util.BombTargeting;
+import com.project.explosive.util.SoundUtil;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
@@ -114,7 +115,7 @@ public class ICBMItem extends Item implements PolymerItem {
                     serverWorld.spawnEntity(icbm);
                 }
             } else {
-                world.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.ICBM_IGNITION, SoundCategory.BLOCKS, 2.0F, 1.0F);
+                SoundUtil.playAt(serverWorld, player.getX(), player.getY(), player.getZ(), ModSounds.ICBM_IGNITION, SoundCategory.BLOCKS, 2.0F, 1.0F);
                 TntEntity fallbackTnt = new TntEntity(serverWorld, (double) targetPos.getX() + 0.5, (double) targetPos.getY() + 100.0, (double) targetPos.getZ() + 0.5, player);
                 fallbackTnt.setVelocity(0.0, -1.0, 0.0);
                 serverWorld.spawnEntity(fallbackTnt);
