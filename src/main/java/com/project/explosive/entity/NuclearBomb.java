@@ -94,8 +94,8 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
     }
 
     protected int terrainBlastChunkRadius() {
-        double maxBlocks = 250.0 * this.blastScale;
-        return (int) Math.ceil(maxBlocks / 16.0) + 1;
+        double maxBlocks = Math.min(64.0, 32.0 * (double) this.blastScale);
+        return Math.min(4, (int) Math.ceil(maxBlocks / 16.0) + 1);
     }
 
     @Override
@@ -278,7 +278,7 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
         BlastCrumble.blastAndCrumble(serverLevel, boomX, boomY, boomZ, 32.0 * (double) this.blastScale);
 
         // 5. Spawns radiation field via RadiationManager.addRadiationSource(...)
-        RadiationManager.addRadiationSource(this.originPos, 900.0 * (double) this.blastScale, 24000);
+        RadiationManager.addRadiationSource(serverLevel, this.originPos, 900.0 * (double) this.blastScale, 24000);
 
         // 6. Immediate sounds & delayed acoustic sound playback via SoundUtil.playDelayed(...) with ModSounds.NUCLEAR_EXPLOSION and vanilla thunder/explode sounds
         SoundUtil.playAt(serverLevel, boomX, boomY, boomZ, SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.BLOCKS, 6.0F, 1.6F);
@@ -328,8 +328,8 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
     }
 
     private void applyShockwaveDamage(ServerWorld serverLevel, double x, double y, double z) {
-        double maxDist = 250.0 * (double) this.blastScale;
-        Box area = new Box(x - maxDist, y - 60.0, z - maxDist, x + maxDist, y + 100.0, z + maxDist);
+        double maxDist = Math.min(80.0, 60.0 * (double) this.blastScale);
+        Box area = new Box(x - maxDist, y - 40.0, z - maxDist, x + maxDist, y + 60.0, z + maxDist);
 
         for (LivingEntity entity : serverLevel.getEntitiesByClass(LivingEntity.class, area, e -> true)) {
             double dist = Math.sqrt(entity.squaredDistanceTo(x, y, z));
@@ -383,7 +383,12 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
                 double ang = (Math.PI * 2) * (double) i / (double) points;
                 double px = cx + Math.cos(ang) * currentRadius;
                 double pz = cz + Math.sin(ang) * currentRadius;
-                int py = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, MathHelper.floor(px), MathHelper.floor(pz));
+                int fx = MathHelper.floor(px);
+                int fz = MathHelper.floor(pz);
+                if (!serverLevel.isChunkLoaded(fx >> 4, fz >> 4)) {
+                    continue;
+                }
+                int py = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, fx, fz);
                 ParticleUtil.spawnLongDistanceParticles(
                         serverLevel, ModParticles.SMOKE_BIG_SHORT, px, (double) py + 0.5, pz, 1, Math.cos(ang) * 0.2, 0.04, Math.sin(ang) * 0.2
                 );
@@ -393,8 +398,8 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
 
     private void setBlocksOnFire(ServerWorld serverLevel) {
         BlockPos origin = this.originPos != null ? this.originPos : this.getBlockPos();
-        int fireRadius = (int) (60.0 * this.blastScale);
-        int samples = 500;
+        int fireRadius = Math.min(48, (int) (48.0 * this.blastScale));
+        int samples = 150;
 
         for (int i = 0; i < samples; i++) {
             double ang = serverLevel.getRandom().nextDouble() * 2.0 * Math.PI;
@@ -403,6 +408,9 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
             int dz = (int) Math.round(Math.sin(ang) * r);
             int wx = origin.getX() + dx;
             int wz = origin.getZ() + dz;
+            if (!serverLevel.isChunkLoaded(wx >> 4, wz >> 4)) {
+                continue;
+            }
             int wy = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, wx, wz);
             BlockPos groundPos = new BlockPos(wx, wy - 1, wz);
             BlockPos firePos = new BlockPos(wx, wy, wz);
@@ -411,8 +419,8 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
             BlockState fireState = serverLevel.getBlockState(firePos);
             if (fireState.isAir() && (groundState.isIn(BlockTags.LOGS) || groundState.isIn(BlockTags.PLANKS) || groundState.isIn(BlockTags.LEAVES) || groundState.isSolidBlock(serverLevel, groundPos))) {
                 if (Blocks.FIRE.getDefaultState().canPlaceAt(serverLevel, firePos)) {
-                    serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 3);
-                    if (i % 60 == 0) {
+                    serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 18);
+                    if (i % 50 == 0) {
                         FirePropagationManager.getInstance().startFirePropagation(serverLevel, wx, wy, wz, 25);
                     }
                 }
@@ -432,7 +440,7 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
         if (this.getWorld() instanceof ServerWorld serverLevel) {
             BombChunkTickets.release(serverLevel, this);
             if (reason.shouldDestroy() && this.hasExploded) {
-                BombChunkTickets.forceTemporary(serverLevel, this.originPos != null ? this.originPos : this.getBlockPos(), this.terrainBlastChunkRadius(), 600);
+                BombChunkTickets.forceTemporary(serverLevel, this.originPos != null ? this.originPos : this.getBlockPos(), this.terrainBlastChunkRadius(), 200);
             }
         }
         super.remove(reason);

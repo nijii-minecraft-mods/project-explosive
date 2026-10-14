@@ -64,6 +64,9 @@ public final class CraterUtil {
                     continue;
                 }
                 int wz = baseZ + dz;
+                if (!level.isChunkLoaded(wx >> 4, wz >> 4)) {
+                    continue;
+                }
                 int colDepth = (int) Math.round(maxDepth * (1.0 - distSq * invR2));
                 if (colDepth < 1) {
                     continue;

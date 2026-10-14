@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "projectexplosive:big_bomb_frag_head"
+          "name": "projectexplosive:big_bomb_head"
         }
       ],
       "conditions": [
@@ -17,3 +17,4 @@
     }
   ]
 }
+

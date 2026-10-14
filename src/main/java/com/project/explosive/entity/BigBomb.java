@@ -87,8 +87,8 @@ public class BigBomb extends ThrownEntity implements PolymerEntity {
     }
 
     private int terrainBlastChunkRadius() {
-        double maxBlocks = 136.0 * (this.blastScale / 0.7F);
-        return (int) Math.ceil(maxBlocks / 16.0) + 1;
+        double maxBlocks = Math.min(32.0, 20.0 * (double) (this.blastScale / 0.7F));
+        return Math.min(3, (int) Math.ceil(maxBlocks / 16.0) + 1);
     }
 
     @Override
@@ -339,17 +339,36 @@ public class BigBomb extends ThrownEntity implements PolymerEntity {
             return;
         }
 
-        double cx = (double) this.originPos.getX() + 0.5;
-        double cz = (double) this.originPos.getZ() + 0.5;
-        int points = (int) MathHelper.clamp(currentRadius * 3.0, 12.0, 48.0);
-        for (int i = 0; i < points; i++) {
-            double ang = (Math.PI * 2) * (double) i / (double) points;
-            double px = cx + Math.cos(ang) * currentRadius;
-            double pz = cz + Math.sin(ang) * currentRadius;
-            int py = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, MathHelper.floor(px), MathHelper.floor(pz));
-            ParticleUtil.spawnLongDistanceParticles(
-                    serverLevel, ModParticles.SMOKE, px, (double) py + 0.3, pz, 1, 0.0, 0.1, 0.0
-            );
+        double maxListenDistSq = (currentRadius + 64.0) * (currentRadius + 64.0);
+        boolean playerNearby = false;
+        for (ServerPlayerEntity player : serverLevel.getPlayers()) {
+            if (player.squaredDistanceTo(this.originPos.getX(), this.originPos.getY(), this.originPos.getZ()) <= maxListenDistSq) {
+                playerNearby = true;
+                break;
+            }
+        }
+        if (!playerNearby) {
+            return;
+        }
+
+        if (this.shockwaveTicks % 2 == 0) {
+            double cx = (double) this.originPos.getX() + 0.5;
+            double cz = (double) this.originPos.getZ() + 0.5;
+            int points = (int) MathHelper.clamp(currentRadius * 1.5, 10.0, 24.0);
+            for (int i = 0; i < points; i++) {
+                double ang = (Math.PI * 2) * (double) i / (double) points;
+                double px = cx + Math.cos(ang) * currentRadius;
+                double pz = cz + Math.sin(ang) * currentRadius;
+                int fx = MathHelper.floor(px);
+                int fz = MathHelper.floor(pz);
+                if (!serverLevel.isChunkLoaded(fx >> 4, fz >> 4)) {
+                    continue;
+                }
+                int py = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, fx, fz);
+                ParticleUtil.spawnLongDistanceParticles(
+                        serverLevel, ModParticles.SMOKE, px, (double) py + 0.3, pz, 1, 0.0, 0.1, 0.0
+                );
+            }
         }
     }
 
@@ -362,11 +381,14 @@ public class BigBomb extends ThrownEntity implements PolymerEntity {
             double distance = (double) minRadius + Math.sqrt(serverLevel.getRandom().nextDouble()) * (double) (radius - minRadius);
             int tx = origin.getX() + (int) Math.round(Math.cos(angle) * distance);
             int tz = origin.getZ() + (int) Math.round(Math.sin(angle) * distance);
+            if (!serverLevel.isChunkLoaded(tx >> 4, tz >> 4)) {
+                continue;
+            }
             int ty = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, tx, tz);
             BlockPos groundPos = new BlockPos(tx, ty, tz);
             BlockState aboveState = serverLevel.getBlockState(groundPos);
             if ((aboveState.isAir() || aboveState.isReplaceable()) && serverLevel.getRandom().nextFloat() < 0.7F) {
-                serverLevel.setBlockState(groundPos, ModBlocks.DEBRIS.get().getDefaultState(), 3);
+                serverLevel.setBlockState(groundPos, ModBlocks.DEBRIS.get().getDefaultState(), 18);
             }
         }
     }
@@ -383,7 +405,7 @@ public class BigBomb extends ThrownEntity implements PolymerEntity {
         if (this.getWorld() instanceof ServerWorld serverLevel) {
             BombChunkTickets.release(serverLevel, this);
             if (reason.shouldDestroy() && this.hasExploded) {
-                BombChunkTickets.forceTemporary(serverLevel, this.originPos != null ? this.originPos : this.getBlockPos(), this.terrainBlastChunkRadius(), 600);
+                BombChunkTickets.forceTemporary(serverLevel, this.originPos != null ? this.originPos : this.getBlockPos(), this.terrainBlastChunkRadius(), 200);
             }
         }
         super.remove(reason);

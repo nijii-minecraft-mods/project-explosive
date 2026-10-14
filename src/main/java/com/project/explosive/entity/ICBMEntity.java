@@ -323,7 +323,8 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
                 this.phase = FlightPhase.EXPLODED;
                 this.setNoGravity(false);
                 this.setVelocity(Vec3d.ZERO);
-                BombChunkTickets.forceTemporary(serverLevel, this.getBlockPos(), 2, 600);
+                BombChunkTickets.release(serverLevel, this);
+                BombChunkTickets.forceTemporary(serverLevel, this.getBlockPos(), 2, 200);
 
                 if ("small".equals(this.explosionType)) {
                     SmallBomb smallBomb = new SmallBomb(serverLevel, this.getX(), this.getY(), this.getZ(), true);

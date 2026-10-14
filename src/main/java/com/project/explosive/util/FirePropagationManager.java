@@ -46,6 +46,7 @@ import net.minecraft.world.PersistentState;
 public class FirePropagationManager {
     private static final FirePropagationManager INSTANCE = new FirePropagationManager();
     private final Map<UUID, FirePropagationManager.FirePropagationSystem> activeSystems = new ConcurrentHashMap<>();
+    private static final int MAX_ACTIVE_SYSTEMS = 20;
     private static final double HEAT_RISE_FACTOR = 2.0;
     private static final double WIND_SPEED_FACTOR = 0.5;
     private static final double LOG_AXIS_FACTOR = 1.3;
@@ -60,13 +61,7 @@ public class FirePropagationManager {
     }
 
     public static void init() {
-        ServerTickEvents.END_WORLD_TICK.register(world -> {
-            if (!INSTANCE.activeSystems.isEmpty()) {
-                FirePropagationSavedData data = FirePropagationSavedData.get(world);
-                data.markDirty();
-            }
-            onWorldTick(world);
-        });
+        ServerTickEvents.END_WORLD_TICK.register(FirePropagationManager::onWorldTick);
     }
 
     public void startFirePropagation(ServerWorld level, double x, double y, double z) {
@@ -79,6 +74,17 @@ public class FirePropagationManager {
 
     public void startFirePropagation(ServerWorld level, double x, double y, double z, int initialIntensity, double radius) {
         if (Config.enableFirePropagation) {
+            if (this.activeSystems.size() >= MAX_ACTIVE_SYSTEMS) {
+                this.cleanupInactiveSystems();
+                if (this.activeSystems.size() >= MAX_ACTIVE_SYSTEMS) {
+                    Iterator<Entry<UUID, FirePropagationSystem>> it = this.activeSystems.entrySet().iterator();
+                    if (it.hasNext()) {
+                        Entry<UUID, FirePropagationSystem> oldest = it.next();
+                        oldest.getValue().stop();
+                        it.remove();
+                    }
+                }
+            }
             UUID systemId = UUID.randomUUID();
             FirePropagationManager.FirePropagationSystem system = new FirePropagationManager.FirePropagationSystem(systemId, level, x, y, z);
             system.setInitialIntensity(initialIntensity);
@@ -88,14 +94,15 @@ public class FirePropagationManager {
 
             this.activeSystems.put(systemId, system);
             system.start();
+            FirePropagationSavedData.get(level).markDirty();
         }
     }
 
     public void stopFirePropagation(UUID systemId) {
-        FirePropagationManager.FirePropagationSystem system = this.activeSystems.get(systemId);
+        FirePropagationManager.FirePropagationSystem system = this.activeSystems.remove(systemId);
         if (system != null) {
             system.stop();
-            this.activeSystems.remove(systemId);
+            FirePropagationSavedData.get(system.level).markDirty();
         }
     }
 
@@ -120,7 +127,13 @@ public class FirePropagationManager {
     }
 
     public static void onWorldTick(ServerWorld serverLevel) {
-        INSTANCE.activeSystems.entrySet().removeIf(entry -> !entry.getValue().isActive);
+        INSTANCE.activeSystems.entrySet().removeIf(entry -> {
+            if (!entry.getValue().isActive) {
+                entry.getValue().stop();
+                return true;
+            }
+            return false;
+        });
         int globalTickBudget = (int) (400.0F * Math.min(1.0F, Config.particleDensityMultiplier));
         if (Config.isPotatoMode()) {
             globalTickBudget = Math.min(globalTickBudget, 220);
@@ -145,6 +158,7 @@ public class FirePropagationManager {
         while (iterator.hasNext()) {
             Entry<UUID, FirePropagationManager.FirePropagationSystem> entry = iterator.next();
             if (!entry.getValue().isActive) {
+                entry.getValue().stop();
                 iterator.remove();
             }
         }
@@ -237,6 +251,8 @@ public class FirePropagationManager {
         private int propagationInterval;
         private static final int MAX_LIFETIME_TICKS = 3600;
         private static final double MAX_SPREAD_RADIUS = 36.0;
+        private static final int MAX_QUEUE_SIZE = 1000;
+        private static final int MAX_CELLS = 2000;
         private final SimpleParticleType cachedFireFlame;
         private final SimpleParticleType cachedSmallFire;
         private final SimpleParticleType cachedFireSmoke;
@@ -377,20 +393,27 @@ public class FirePropagationManager {
         }
 
         public void igniteRadius(double radius, int intensity) {
-            int r = (int) Math.ceil(radius);
+            double safeRadius = Math.min(radius, 16.0);
+            int r = (int) Math.ceil(safeRadius);
             BlockPos center = new BlockPos((int) this.startX, (int) this.startY, (int) this.startZ);
 
             for (int dx = -r; dx <= r; dx++) {
-                for (int dy = -r; dy <= r; dy++) {
-                    for (int dz = -r; dz <= r; dz++) {
-                        if ((double) (dx * dx + dy * dy + dz * dz) <= radius * radius) {
-                            BlockPos target = center.add(dx, dy, dz);
+                for (int dz = -r; dz <= r; dz++) {
+                    int wx = center.getX() + dx;
+                    int wz = center.getZ() + dz;
+                    if (!this.level.isChunkLoaded(wx >> 4, wz >> 4)) {
+                        continue;
+                    }
+                    for (int dy = -r; dy <= r; dy++) {
+                        if ((double) (dx * dx + dy * dy + dz * dz) <= safeRadius * safeRadius) {
+                            if (this.cellStates.size() >= MAX_CELLS || this.pendingQueue.size() >= MAX_QUEUE_SIZE) {
+                                return;
+                            }
+                            BlockPos target = new BlockPos(wx, center.getY() + dy, wz);
                             if (this.getState(target) == FirePropagationManager.FirePropagationSystem.CellState.EMPTY && this.isBlockInflammable(target)) {
                                 this.fireIntensity.put(target, intensity);
                                 this.setState(target, FirePropagationManager.FirePropagationSystem.CellState.PARTICLE_FIRE);
-                                if (!this.pendingQueue.contains(target)) {
-                                    this.pendingQueue.offer(target);
-                                }
+                                this.pendingQueue.offer(target);
                             }
                         }
                     }
@@ -451,11 +474,13 @@ public class FirePropagationManager {
 
         public void tick(int maxBlocksBudget) {
             if (this.shouldStop) {
+                this.stop();
                 this.isActive = false;
             } else {
                 this.currentTickCount++;
-                if (this.currentTickCount > 3600) {
-                    this.shouldStop = true;
+                if (this.currentTickCount > MAX_LIFETIME_TICKS) {
+                    this.stop();
+                    this.isActive = false;
                 } else {
                     if (this.currentTickCount % 120 == 0) {
                         this.setWindAngle(this.windAngle + (this.level.getRandom().nextDouble() - 0.5) * 0.12);
@@ -465,11 +490,15 @@ public class FirePropagationManager {
                         if (this.pendingQueue.isEmpty() && this.nextQueue.isEmpty()) {
                             this.emptyQueueCount++;
                             if (this.emptyQueueCount >= 3) {
-                                this.shouldStop = true;
+                                this.stop();
+                                this.isActive = false;
+                                return;
                             }
                         } else {
                             this.emptyQueueCount = 0;
-                            this.pendingQueue.addAll(this.nextQueue);
+                            while (this.pendingQueue.size() < MAX_QUEUE_SIZE && !this.nextQueue.isEmpty()) {
+                                this.pendingQueue.offer(this.nextQueue.poll());
+                            }
                             this.nextQueue.clear();
                         }
                     }
@@ -496,6 +525,9 @@ public class FirePropagationManager {
         }
 
         private void processSingleCell(BlockPos firePos) {
+            if (!this.level.isChunkLoaded(firePos.getX() >> 4, firePos.getZ() >> 4)) {
+                return;
+            }
             if (this.getState(firePos) == FirePropagationManager.FirePropagationSystem.CellState.PARTICLE_FIRE) {
                 if (this.checkExtinguish(firePos)) {
                     return;
@@ -507,7 +539,9 @@ public class FirePropagationManager {
                 }
 
                 if (this.level.getRandom().nextDouble() < 0.25) {
-                    this.nextQueue.offer(firePos);
+                    if (this.nextQueue.size() < MAX_QUEUE_SIZE) {
+                        this.nextQueue.offer(firePos);
+                    }
                     return;
                 }
 
@@ -516,7 +550,9 @@ public class FirePropagationManager {
                 this.damageNearbyEntities(firePos);
                 this.launchWindEmbers(firePos);
                 if (this.getState(firePos) == FirePropagationManager.FirePropagationSystem.CellState.PARTICLE_FIRE) {
-                    this.nextQueue.offer(firePos);
+                    if (this.nextQueue.size() < MAX_QUEUE_SIZE) {
+                        this.nextQueue.offer(firePos);
+                    }
                 }
             }
         }
@@ -604,6 +640,9 @@ public class FirePropagationManager {
         }
 
         private boolean checkExtinguish(BlockPos pos) {
+            if (!this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+                return false;
+            }
             BlockState state = this.level.getBlockState(pos);
             if (state.getFluidState().isIn(FluidTags.WATER)) {
                 this.extinguishFire(pos, true);
@@ -612,7 +651,7 @@ public class FirePropagationManager {
                 BlockPos[] adjacents = new BlockPos[]{pos.up(), pos.down(), pos.north(), pos.south(), pos.east(), pos.west()};
 
                 for (BlockPos adj : adjacents) {
-                    if (this.level.getBlockState(adj).getFluidState().isIn(FluidTags.WATER)) {
+                    if (this.level.isChunkLoaded(adj.getX() >> 4, adj.getZ() >> 4) && this.level.getBlockState(adj).getFluidState().isIn(FluidTags.WATER)) {
                         this.extinguishFire(pos, true);
                         return true;
                     }
@@ -630,7 +669,7 @@ public class FirePropagationManager {
         private void extinguishFire(BlockPos pos, boolean playSteamEffects) {
             this.removeMinecraftFire(pos);
             this.setState(pos, FirePropagationManager.FirePropagationSystem.CellState.EMPTY);
-            if (playSteamEffects) {
+            if (playSteamEffects && this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
                 if (this.level.getRandom().nextDouble() < 0.6) {
                     SoundUtil.playAt(
                             this.level,
@@ -666,6 +705,9 @@ public class FirePropagationManager {
                 double intensityMultiplier = 0.5 + (double) intensity / 10.0;
 
                 for (BlockPos neighborPos : selectedNeighbors) {
+                    if (!this.level.isChunkLoaded(neighborPos.getX() >> 4, neighborPos.getZ() >> 4)) {
+                        continue;
+                    }
                     double dx = (double) neighborPos.getX() - this.startX;
                     double dy = (double) neighborPos.getY() - this.startY;
                     double dz = (double) neighborPos.getZ() - this.startZ;
@@ -855,6 +897,9 @@ public class FirePropagationManager {
                 for (int dz = -1; dz <= 1; dz++) {
                     if (dx != 0 || dz != 0) {
                         BlockPos checkPos = pos.add(dx, 0, dz);
+                        if (!this.level.isChunkLoaded(checkPos.getX() >> 4, checkPos.getZ() >> 4)) {
+                            continue;
+                        }
                         BlockState state = this.level.getBlockState(checkPos);
                         totalCount++;
                         if (this.isWoodBlock(state)
@@ -868,6 +913,9 @@ public class FirePropagationManager {
                 }
             }
 
+            if (totalCount == 0) {
+                return 1.0;
+            }
             double fuelDensity = (double) combustibleCount / (double) totalCount;
             return 0.8 + fuelDensity * 0.8;
         }
@@ -936,6 +984,9 @@ public class FirePropagationManager {
 
         private void applyHeatToNeighbor(BlockPos neighborPos, double heatApplied, int sourceIntensity) {
             if (!(heatApplied <= 0.1)) {
+                if (this.cellStates.size() >= MAX_CELLS || this.nextQueue.size() >= MAX_QUEUE_SIZE) {
+                    return;
+                }
                 int currentResistance = this.thermalResistance.getOrDefault(neighborPos, this.getDefaultThermalResistance(neighborPos));
                 int currentFuel = this.fuelAmount.getOrDefault(neighborPos, this.getDefaultFuelAmount(neighborPos));
                 int heatReduction = Math.max(1, (int) (heatApplied * 0.5));
@@ -966,11 +1017,17 @@ public class FirePropagationManager {
         }
 
         private boolean isBlockInflammable(BlockPos pos) {
+            if (!this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+                return false;
+            }
             BlockState state = this.level.getBlockState(pos);
             return state.isAir() ? true : state.getFluidState().isEmpty();
         }
 
         private int getDefaultThermalResistance(BlockPos pos) {
+            if (!this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+                return 200;
+            }
             BlockState state = this.level.getBlockState(pos);
             if (state.isAir()) {
                 return 0;
@@ -989,6 +1046,9 @@ public class FirePropagationManager {
         }
 
         private int getDefaultFuelAmount(BlockPos pos) {
+            if (!this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+                return 0;
+            }
             BlockState state = this.level.getBlockState(pos);
             if (state.isAir()) {
                 return 0;
@@ -1082,16 +1142,21 @@ public class FirePropagationManager {
         }
 
         private void replaceBurnedBlock(BlockPos pos, BlockState state) {
+            if (!this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+                return;
+            }
             if (this.isGrassBlock(state)) {
-                this.level.setBlockState(pos, Blocks.DIRT.getDefaultState(), 3);
+                this.level.setBlockState(pos, Blocks.DIRT.getDefaultState(), 18);
             } else if (this.isWoodBlock(state)) {
                 BlockState deadState = ExplosionUtil.getDeadBlockVariant(state);
-                this.level.setBlockState(pos, deadState, 3);
-                ExplosionUtil.transformBlockToFallingBlock(this.level, (double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5, 1.0F);
+                this.level.setBlockState(pos, deadState, 18);
+                if (this.level.getRandom().nextFloat() < 0.05F) {
+                    ExplosionUtil.transformBlockToFallingBlock(this.level, (double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5, 1.0F);
+                }
             } else if (!this.isLeafBlock(state) && !this.isPlantBlock(state)) {
-                this.level.breakBlock(pos, false);
+                this.level.setBlockState(pos, Blocks.AIR.getDefaultState(), 18);
             } else {
-                this.level.removeBlock(pos, false);
+                this.level.setBlockState(pos, Blocks.AIR.getDefaultState(), 18);
             }
         }
 
@@ -1151,13 +1216,21 @@ public class FirePropagationManager {
         }
 
         private void setState(BlockPos pos, FirePropagationManager.FirePropagationSystem.CellState newState) {
+            if (this.cellStates.size() >= MAX_CELLS && !this.cellStates.containsKey(pos)) {
+                this.cellStates.entrySet().removeIf(e -> e.getValue() == CellState.BURNED || e.getValue() == CellState.EMPTY);
+                if (this.cellStates.size() >= MAX_CELLS) {
+                    return;
+                }
+            }
             this.cellStates.put(pos, newState);
             if (newState == FirePropagationManager.FirePropagationSystem.CellState.INFLAMMABLE && !this.thermalResistance.containsKey(pos)) {
                 this.thermalResistance.put(pos, this.getDefaultThermalResistance(pos));
                 this.fuelAmount.put(pos, this.getDefaultFuelAmount(pos));
-                BlockState state = this.level.getBlockState(pos);
-                if (this.isGrassBlock(state)) {
-                    this.level.setBlockState(pos, Blocks.DIRT.getDefaultState(), 3);
+                if (this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+                    BlockState state = this.level.getBlockState(pos);
+                    if (this.isGrassBlock(state)) {
+                        this.level.setBlockState(pos, Blocks.DIRT.getDefaultState(), 18);
+                    }
                 }
             }
 
@@ -1177,6 +1250,10 @@ public class FirePropagationManager {
                 this.heatLevel.remove(pos);
                 this.thermalResistance.remove(pos);
                 this.fuelAmount.remove(pos);
+                this.lastHeatTransferTick.remove(pos);
+                this.burnProgress.remove(pos);
+                this.lastBurnEffectTick.remove(pos);
+                this.lastEntityDamageTick.remove(pos);
             }
 
             this.applyStateToWorld(pos, newState);
@@ -1185,13 +1262,13 @@ public class FirePropagationManager {
         private void applyStateToWorld(BlockPos pos, FirePropagationManager.FirePropagationSystem.CellState state) {
             switch (state) {
                 case PARTICLE_FIRE:
-                    if (this.level.isChunkLoaded(pos)) {
+                    if (this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
                         this.placeMinecraftFire(pos);
                         this.spawnFireParticles(pos);
                     }
                     break;
                 case BURNED:
-                    if (this.level.isChunkLoaded(pos)) {
+                    if (this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
                         this.removeMinecraftFire(pos);
                     }
                     break;
@@ -1202,36 +1279,46 @@ public class FirePropagationManager {
         }
 
         private void placeMinecraftFire(BlockPos pos) {
+            if (!this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+                return;
+            }
+            if (pos.getY() <= this.level.getBottomY() || pos.getY() >= this.level.getTopY() - 1) {
+                return;
+            }
+
             BlockState cur = this.level.getBlockState(pos);
             if (cur.isAir()) {
                 BlockPos down = pos.down();
                 BlockState downState = this.level.getBlockState(down);
                 if (!downState.isAir() && (downState.isSolidBlock(this.level, down) || this.isWoodBlock(downState) || this.isLeafBlock(downState) || this.isGrassBlock(downState))) {
                     if (Blocks.FIRE.getDefaultState().canPlaceAt(this.level, pos)) {
-                        this.level.setBlockState(pos, Blocks.FIRE.getDefaultState(), 3);
+                        this.level.setBlockState(pos, Blocks.FIRE.getDefaultState(), 18);
                         return;
                     }
                 }
             } else if (this.isPlantBlock(cur)) {
-                this.level.setBlockState(pos, Blocks.FIRE.getDefaultState(), 3);
+                this.level.setBlockState(pos, Blocks.FIRE.getDefaultState(), 18);
                 return;
             }
 
             BlockPos above = pos.up();
             if (this.level.getBlockState(above).isAir() && (cur.isSolidBlock(this.level, pos) || this.isWoodBlock(cur) || this.isLeafBlock(cur) || this.isGrassBlock(cur))) {
                 if (Blocks.FIRE.getDefaultState().canPlaceAt(this.level, above)) {
-                    this.level.setBlockState(above, Blocks.FIRE.getDefaultState(), 3);
+                    this.level.setBlockState(above, Blocks.FIRE.getDefaultState(), 18);
                 }
             }
         }
 
         private void removeMinecraftFire(BlockPos pos) {
+            if (!this.level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+                return;
+            }
             if (this.level.getBlockState(pos).getBlock() instanceof AbstractFireBlock) {
-                this.level.removeBlock(pos, false);
+                this.level.setBlockState(pos, Blocks.AIR.getDefaultState(), 18);
             }
             BlockPos above = pos.up();
-            if (this.level.getBlockState(above).getBlock() instanceof AbstractFireBlock) {
-                this.level.removeBlock(above, false);
+            if (this.level.isChunkLoaded(above.getX() >> 4, above.getZ() >> 4) && this.level.getBlockState(above).getBlock() instanceof AbstractFireBlock) {
+                this.level.setBlockState(above, Blocks.AIR.getDefaultState(), 18);
             }
         }
 

@@ -86,6 +86,9 @@ public final class BlastCrumble {
                     double hSq = dxSq + (double) dz * (double) dz;
                     if (!(hSq > r2)) {
                         int wz = bz + dz;
+                        if (!level.isChunkLoaded(wx >> 4, wz >> 4)) {
+                            continue;
+                        }
                         int dyMax = (int) Math.sqrt(r2 - hSq);
 
                         for (int dy = -dyMax; dy <= dyMax; dy++) {
@@ -134,6 +137,9 @@ public final class BlastCrumble {
 
             for (int dz = -hr; dz <= hr; dz++) {
                 int wz = cz + dz;
+                if (!level.isChunkLoaded(wx >> 4, wz >> 4)) {
+                    continue;
+                }
                 int airRun = 0;
 
                 for (int wy = yMin; wy <= yTop; wy++) {

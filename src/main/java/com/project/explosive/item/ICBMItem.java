@@ -47,10 +47,16 @@ public class ICBMItem extends Item implements PolymerItem {
     public static ICBMLauncher LAUNCHER = null;
 
     private final PolymerModelData modelData;
+    private final PolymerModelData modelDataSmall;
+    private final PolymerModelData modelDataBig;
+    private final PolymerModelData modelDataNuclear;
 
     public ICBMItem(Settings settings) {
         super(settings);
         this.modelData = PolymerResourcePackUtils.requestModel(Items.FIREWORK_ROCKET, Identifier.of("projectexplosive", "item/icbm"));
+        this.modelDataSmall = PolymerResourcePackUtils.requestModel(Items.FIREWORK_ROCKET, Identifier.of("projectexplosive", "item/icbm_small"));
+        this.modelDataBig = PolymerResourcePackUtils.requestModel(Items.FIREWORK_ROCKET, Identifier.of("projectexplosive", "item/icbm_big"));
+        this.modelDataNuclear = PolymerResourcePackUtils.requestModel(Items.FIREWORK_ROCKET, Identifier.of("projectexplosive", "item/icbm_nuclear"));
     }
 
     @Override
@@ -154,6 +160,13 @@ public class ICBMItem extends Item implements PolymerItem {
 
     @Override
     public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        return this.modelData != null ? this.modelData.value() : -1;
+        String type = getExplosionType(itemStack);
+        PolymerModelData selected = switch (type) {
+            case "small" -> this.modelDataSmall != null ? this.modelDataSmall : this.modelData;
+            case "big" -> this.modelDataBig != null ? this.modelDataBig : this.modelData;
+            case "nuclear" -> this.modelDataNuclear != null ? this.modelDataNuclear : this.modelData;
+            default -> this.modelData;
+        };
+        return selected != null ? selected.value() : -1;
     }
 }

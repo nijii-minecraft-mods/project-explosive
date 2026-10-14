@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "projectexplosive:icbm_big"
+          "name": "projectexplosive:icbm"
         }
       ],
       "conditions": [

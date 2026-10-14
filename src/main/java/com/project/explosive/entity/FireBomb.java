@@ -164,6 +164,9 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
                 if (distSq <= radius * radius) {
                     int wx = center.getX() + dx;
                     int wz = center.getZ() + dz;
+                    if (!serverLevel.isChunkLoaded(wx >> 4, wz >> 4)) {
+                        continue;
+                    }
                     int topY = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, wx, wz);
                     BlockPos groundPos = new BlockPos(wx, topY - 1, wz);
                     BlockPos firePos = new BlockPos(wx, topY, wz);
@@ -173,7 +176,7 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
 
                     // If non-solid foliage (grass, flowers), consume it directly with fire
                     if (groundState.getBlock() instanceof PlantBlock) {
-                        serverLevel.setBlockState(groundPos, Blocks.FIRE.getDefaultState(), 3);
+                        serverLevel.setBlockState(groundPos, Blocks.FIRE.getDefaultState(), 18);
                         continue;
                     }
 
@@ -185,7 +188,7 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
                         double prob = 0.85 - (Math.sqrt(distSq) / (double) radius) * 0.35;
                         if (serverLevel.getRandom().nextDouble() < prob) {
                             if (Blocks.FIRE.getDefaultState().canPlaceAt(serverLevel, firePos)) {
-                                serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 3);
+                                serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 18);
                             }
                         }
                     }
@@ -205,8 +208,13 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
             double targetZ = cz + Math.sin(angle) * distance;
 
             DelayedTaskScheduler.schedule(serverLevel, delay, () -> {
-                int groundY = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, MathHelper.floor(targetX), MathHelper.floor(targetZ));
-                BlockPos firePos = new BlockPos(MathHelper.floor(targetX), groundY, MathHelper.floor(targetZ));
+                int tx = MathHelper.floor(targetX);
+                int tz = MathHelper.floor(targetZ);
+                if (!serverLevel.isChunkLoaded(tx >> 4, tz >> 4)) {
+                    return;
+                }
+                int groundY = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, tx, tz);
+                BlockPos firePos = new BlockPos(tx, groundY, tz);
 
                 // Splash effects at landing point
                 serverLevel.spawnParticles(ParticleTypes.LAVA, targetX, (double) groundY + 0.3, targetZ, 4, 0.3, 0.3, 0.3, 0.0);
@@ -215,7 +223,7 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
                 if (serverLevel.getBlockState(firePos).isAir()) {
                     BlockPos below = firePos.down();
                     if (!serverLevel.getBlockState(below).isAir() && Blocks.FIRE.getDefaultState().canPlaceAt(serverLevel, firePos)) {
-                        serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 3);
+                        serverLevel.setBlockState(firePos, Blocks.FIRE.getDefaultState(), 18);
                     }
                 }
             });
@@ -243,7 +251,7 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
         }
 
         // 5. Radial shockwave ring of fire on ground
-        int ringCount = 36;
+        int ringCount = Math.max(8, Math.min(18, (int) (18 * com.project.explosive.Config.particleDensityMultiplier)));
         for (int i = 0; i < ringCount; i++) {
             double a = (Math.PI * 2) * (double) i / (double) ringCount;
             double rSpeed = 1.6 + serverLevel.getRandom().nextDouble() * 0.5;

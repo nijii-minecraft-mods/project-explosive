@@ -51,21 +51,35 @@ public class EnvironmentalTransformer {
 
     public static void contaminateArea(BlockPos centerPos, ServerWorld level, double intensity) {
         if (EnvironmentalConfig.isBlockContaminationEnabled()) {
+            if (contaminatedAreas.size() >= 50) {
+                contaminatedAreas.entrySet().removeIf(e -> !e.getValue().isStillContaminated());
+            }
             contaminatedAreas.put(centerPos, new EnvironmentalTransformer.ContaminationData(centerPos));
-            int radius = (int) (intensity * 5.0);
-            java.util.Random random = new java.util.Random();
+            int radius = Math.min((int) (intensity * 0.5), 36);
+            int rSq = radius * radius;
+            net.minecraft.util.math.random.Random random = level.getRandom();
+            BlockPos.Mutable mutablePos = new BlockPos.Mutable();
 
             for (int x = -radius; x <= radius; x++) {
+                int wx = centerPos.getX() + x;
                 for (int z = -radius; z <= radius; z++) {
-                    for (int y = -3; y <= 3; y++) {
-                        BlockPos pos = centerPos.add(x, y, z);
-                        double distance = Math.sqrt((double) (x * x + y * y + z * z));
-                        if (distance <= (double) radius) {
-                            double contaminationProbability = (1.0 - distance / (double) radius) * intensity;
-                            contaminationProbability *= EnvironmentalConfig.getContaminationSpreadRate();
-                            if (random.nextDouble() < contaminationProbability) {
-                                scheduleBlockTransformation(pos, level);
-                            }
+                    int wz = centerPos.getZ() + z;
+                    double distSq = (double) (x * x + z * z);
+                    if (distSq > rSq) {
+                        continue;
+                    }
+                    if (!level.isChunkLoaded(wx >> 4, wz >> 4)) {
+                        continue;
+                    }
+
+                    int surfaceY = level.getTopY(net.minecraft.world.Heightmap.Type.MOTION_BLOCKING, wx, wz);
+                    for (int y = surfaceY - 2; y <= surfaceY; y++) {
+                        mutablePos.set(wx, y, wz);
+                        double distance = Math.sqrt(distSq + (double) ((y - centerPos.getY()) * (y - centerPos.getY())));
+                        double contaminationProbability = (1.0 - distance / (double) radius) * Math.min(1.0, intensity * 0.05);
+                        contaminationProbability *= EnvironmentalConfig.getContaminationSpreadRate();
+                        if (random.nextDouble() < contaminationProbability) {
+                            scheduleBlockTransformation(mutablePos, level);
                         }
                     }
                 }
@@ -74,10 +88,13 @@ public class EnvironmentalTransformer {
     }
 
     private static void scheduleBlockTransformation(BlockPos pos, ServerWorld level) {
+        if (!level.isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+            return;
+        }
         BlockState currentState = level.getBlockState(pos);
         BlockState newState = getDeadBlockVariant(currentState);
         if (newState != currentState) {
-            level.setBlockState(pos, newState, 3);
+            level.setBlockState(pos, newState, 18);
             if (EnvironmentalConfig.areRadioactiveParticlesEnabled() && level.getRandom().nextInt(EnvironmentalConfig.getRadioactiveParticleDensity()) == 0) {
                 level.spawnParticles(ParticleTypes.ASH, (double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5, 3, 0.3, 0.3, 0.3, 0.01);
             }
@@ -101,7 +118,7 @@ public class EnvironmentalTransformer {
         } else if (originalBlock == Blocks.OAK_PLANKS) {
             return ModBlocks.DEAD_OAK_PLANKS.get().getDefaultState();
         } else {
-            return ModBlocks.DEAD_DIRT.get().getDefaultState();
+            return originalState;
         }
     }
 

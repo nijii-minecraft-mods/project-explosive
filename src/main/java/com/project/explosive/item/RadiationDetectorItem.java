@@ -6,6 +6,7 @@ import com.project.explosive.util.SoundUtil;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import java.util.UUID;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -27,6 +28,8 @@ public class RadiationDetectorItem extends Item implements PolymerItem {
         this.modelData = PolymerResourcePackUtils.requestModel(Items.COMPASS, Identifier.of("projectexplosive", "item/radiation_detector"));
     }
 
+    private static final java.util.Map<UUID, Double> LAST_MEASURED_RAD = new java.util.concurrent.ConcurrentHashMap<>();
+
     @Override
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
         if (!world.isClient() && entity instanceof ServerPlayerEntity player) {
@@ -35,13 +38,14 @@ public class RadiationDetectorItem extends Item implements PolymerItem {
                 return;
             }
 
-            double ambientRad = RadiationManager.getRadiationAtPosition(world, player.getBlockPos());
-            double ashRad = RadiationManager.getRadiationFromNearbyAsh(world, player.getBlockPos(), 6);
-            double totalRadiation = ambientRad + ashRad;
-            double msvh = totalRadiation * 10.0;
+            double totalRadiation;
+            if (player.age % 4 == 0 || !LAST_MEASURED_RAD.containsKey(player.getUuid())) {
+                double ambientRad = RadiationManager.getRadiationAtPosition(world, player.getBlockPos());
+                double ashRad = RadiationManager.getRadiationFromNearbyAsh(world, player.getBlockPos(), 5);
+                totalRadiation = ambientRad + ashRad;
+                LAST_MEASURED_RAD.put(player.getUuid(), totalRadiation);
 
-            // Action bar text updated every 4 ticks
-            if (player.age % 4 == 0) {
+                double msvh = totalRadiation * 10.0;
                 Formatting color = Formatting.GREEN;
                 if (msvh >= 50.0) {
                     color = Formatting.DARK_RED;
@@ -55,6 +59,8 @@ public class RadiationDetectorItem extends Item implements PolymerItem {
 
                 String display = String.format("☢ Radiation: %.1f mSv/h", msvh);
                 player.sendMessage(Text.literal(display).formatted(color), true);
+            } else {
+                totalRadiation = LAST_MEASURED_RAD.getOrDefault(player.getUuid(), 0.0);
             }
 
             // Geiger clicks

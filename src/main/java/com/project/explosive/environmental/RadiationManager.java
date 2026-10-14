@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.BlockState;
 import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -25,12 +26,15 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.EntityEffectParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.PersistentState;
@@ -40,6 +44,13 @@ public class RadiationManager {
     private static final Map<BlockPos, RadiationManager.RadiationSource> radiationSources = new HashMap<>();
     private static final Map<UUID, RadiationManager.PlayerRadiationData> playerRadiationData = new HashMap<>();
     private static final Map<UUID, RadiationManager.EntityRadiationData> entityRadiationData = new HashMap<>();
+    private static final Map<Long, CachedAshRadiation> ashRadiationCache = new HashMap<>();
+
+    private static final int MAX_RADIATION_SOURCES = 200;
+    private static final int MAX_ENTITY_DATA = 500;
+    private static final int MAX_PLAYER_DATA = 200;
+
+    private record CachedAshRadiation(long tick, double radiation) {}
 
     public static final double DOSE_NEGLIGIBLE = 0.1;
     public static final double DOSE_MILD = 0.5;
@@ -61,8 +72,6 @@ public class RadiationManager {
 
     public static void init() {
         ServerTickEvents.END_WORLD_TICK.register(world -> {
-            RadiationSavedData data = RadiationSavedData.get(world);
-            data.markDirty();
             onWorldTick(world);
         });
 
@@ -80,28 +89,76 @@ public class RadiationManager {
     }
 
     public static RadiationManager.EntityRadiationData getEntityRadiationData(LivingEntity entity) {
-        return entityRadiationData.computeIfAbsent(entity.getUuid(), k -> new RadiationManager.EntityRadiationData());
+        if (entityRadiationData.size() >= MAX_ENTITY_DATA && !entityRadiationData.containsKey(entity.getUuid())) {
+            entityRadiationData.entrySet().removeIf(e -> e.getValue().getDose() < 0.05);
+            if (entityRadiationData.size() >= MAX_ENTITY_DATA) {
+                Iterator<UUID> it = entityRadiationData.keySet().iterator();
+                for (int i = 0; i < 50 && it.hasNext(); i++) {
+                    it.next();
+                    it.remove();
+                }
+            }
+        }
+        RadiationManager.EntityRadiationData data = entityRadiationData.computeIfAbsent(entity.getUuid(), k -> new RadiationManager.EntityRadiationData());
+        if (entity.getWorld() != null) {
+            data.setWorldKey(entity.getWorld().getRegistryKey());
+        }
+        return data;
     }
 
     public static void addRadiationSource(BlockPos pos, double intensity, int duration) {
+        addRadiationSource(null, pos, intensity, duration);
+    }
+
+    public static void addRadiationSource(World world, BlockPos pos, double intensity, int duration) {
         if (EnvironmentalConfig.areRadiationEffectsEnabled()) {
+            if (radiationSources.size() >= MAX_RADIATION_SOURCES) {
+                radiationSources.entrySet().removeIf(e -> !e.getValue().isActive());
+                if (radiationSources.size() >= MAX_RADIATION_SOURCES) {
+                    BlockPos minPos = null;
+                    double minIntensity = Double.MAX_VALUE;
+                    for (Entry<BlockPos, RadiationSource> e : radiationSources.entrySet()) {
+                        if (e.getValue().getIntensity() < minIntensity) {
+                            minIntensity = e.getValue().getIntensity();
+                            minPos = e.getKey();
+                        }
+                    }
+                    if (minPos != null) {
+                        radiationSources.remove(minPos);
+                    }
+                }
+            }
             int adjustedDuration = duration * EnvironmentalConfig.getRadiationDurationFactor();
+            RegistryKey<World> key = world != null ? world.getRegistryKey() : World.OVERWORLD;
             radiationSources.put(
-                    pos, new RadiationManager.RadiationSource((double) pos.getX(), (double) pos.getY(), (double) pos.getZ(), intensity, adjustedDuration)
+                    pos, new RadiationManager.RadiationSource(key, (double) pos.getX(), (double) pos.getY(), (double) pos.getZ(), intensity, adjustedDuration)
             );
+            if (world instanceof ServerWorld sw) {
+                RadiationSavedData.get(sw).markDirty();
+            }
         }
     }
 
     public static double getRadiationAtPosition(World level, BlockPos pos) {
+        if (pos == null) {
+            return 0.0;
+        }
         double totalRadiation = 0.0;
+        RegistryKey<World> targetDim = level != null ? level.getRegistryKey() : null;
 
         for (RadiationManager.RadiationSource source : radiationSources.values()) {
             if (source.isActive()) {
+                if (targetDim != null && source.getWorldKey() != null && !source.getWorldKey().equals(targetDim)) {
+                    continue;
+                }
                 double dx = (double) pos.getX() - source.getX();
                 double dy = (double) pos.getY() - source.getY();
                 double dz = (double) pos.getZ() - source.getZ();
-                double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                double radiationAtPos = source.getIntensity() / (1.0 + distance * distance * 0.01);
+                double distSq = dx * dx + dy * dy + dz * dz;
+                if (distSq > 250000.0) {
+                    continue;
+                }
+                double radiationAtPos = source.getIntensity() / (1.0 + distSq * 0.01);
                 totalRadiation += radiationAtPos;
             }
         }
@@ -110,19 +167,42 @@ public class RadiationManager {
     }
 
     public static double getRadiationFromNearbyAsh(World level, BlockPos centerPos, int radius) {
+        if (level == null || centerPos == null) {
+            return 0.0;
+        }
+
+        long currentTick = level.getTime();
+        long cacheKey = (((long) (centerPos.getX() >> 2)) & 0xFFFFFFFL)
+                | ((((long) (centerPos.getZ() >> 2)) & 0xFFFFFFFL) << 28)
+                | (((long) (centerPos.getY() >> 2) & 0xFFL) << 56);
+
+        CachedAshRadiation cached = ashRadiationCache.get(cacheKey);
+        if (cached != null && (currentTick - cached.tick()) < 8L && (currentTick >= cached.tick())) {
+            return cached.radiation();
+        }
+
         double totalRadiation = 0.0;
+        int clampedRadius = Math.min(radius, 5);
+        BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+        int cx = centerPos.getX();
+        int cy = centerPos.getY();
+        int cz = centerPos.getZ();
 
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -2; y <= 2; y++) {
-                for (int z = -radius; z <= radius; z++) {
-                    BlockPos checkPos = centerPos.add(x, y, z);
-                    if (level.getBlockState(checkPos).getBlock() instanceof RadioactiveAshBlock) {
-                        double distance = Math.sqrt((double) (x * x + y * y + z * z));
-                        if (distance == 0.0) {
-                            distance = 0.5;
-                        }
-
-                        int layers = level.getBlockState(checkPos).get(RadioactiveAshBlock.LAYERS);
+        for (int x = -clampedRadius; x <= clampedRadius; x++) {
+            int checkX = cx + x;
+            for (int z = -clampedRadius; z <= clampedRadius; z++) {
+                int checkZ = cz + z;
+                if (!level.isChunkLoaded(checkX >> 4, checkZ >> 4)) {
+                    continue;
+                }
+                for (int y = -2; y <= 2; y++) {
+                    int checkY = cy + y;
+                    mutablePos.set(checkX, checkY, checkZ);
+                    BlockState state = level.getBlockState(mutablePos);
+                    if (state.getBlock() instanceof RadioactiveAshBlock) {
+                        double distanceSq = (double) (x * x + y * y + z * z);
+                        double distance = distanceSq == 0.0 ? 0.5 : Math.sqrt(distanceSq);
+                        int layers = state.get(RadioactiveAshBlock.LAYERS);
                         double radiation = (double) layers * 2.0E-4 / (1.0 + distance * distance * 0.1);
                         totalRadiation += radiation;
                     }
@@ -130,10 +210,20 @@ public class RadiationManager {
             }
         }
 
+        if (ashRadiationCache.size() > 500) {
+            ashRadiationCache.entrySet().removeIf(e -> (currentTick - e.getValue().tick()) >= 20L);
+            if (ashRadiationCache.size() > 500) {
+                ashRadiationCache.clear();
+            }
+        }
+        ashRadiationCache.put(cacheKey, new CachedAshRadiation(currentTick, totalRadiation));
         return totalRadiation;
     }
 
     public static RadiationManager.PlayerRadiationData getPlayerRadiationData(PlayerEntity player) {
+        if (playerRadiationData.size() >= MAX_PLAYER_DATA && !playerRadiationData.containsKey(player.getUuid())) {
+            playerRadiationData.entrySet().removeIf(e -> e.getValue().getAcuteDose() < 0.01 && e.getValue().getArsStage() == 0);
+        }
         return playerRadiationData.computeIfAbsent(player.getUuid(), uuid -> new RadiationManager.PlayerRadiationData());
     }
 
@@ -236,9 +326,11 @@ public class RadiationManager {
                     for (LivingEntity entity : level.getEntitiesByClass(LivingEntity.class, new Box(sp.getBlockPos()).expand(32.0), e -> true)) {
                         if (!(entity instanceof PlayerEntity)) {
                             BlockPos ep = entity.getBlockPos();
-                            if (level.getBlockState(ep).getBlock() instanceof RadioactiveAshBlock || level.getBlockState(ep.down()).getBlock() instanceof RadioactiveAshBlock) {
-                                RadiationManager.EntityRadiationData data = getEntityRadiationData(entity);
-                                data.addDose(0.005);
+                            if (level.isChunkLoaded(ep.getX() >> 4, ep.getZ() >> 4)) {
+                                if (level.getBlockState(ep).getBlock() instanceof RadioactiveAshBlock || level.getBlockState(ep.down()).getBlock() instanceof RadioactiveAshBlock) {
+                                    RadiationManager.EntityRadiationData data = getEntityRadiationData(entity);
+                                    data.addDose(0.005);
+                                }
                             }
                         }
                     }
@@ -247,8 +339,8 @@ public class RadiationManager {
 
             if (gameTick % 10L == 0L) {
                 for (RadiationManager.RadiationSource source : radiationSources.values()) {
-                    if (source.isActive()) {
-                        double radius = Math.sqrt(source.getIntensity()) * 5.0;
+                    if (source.isActive() && (source.getWorldKey() == null || source.getWorldKey().equals(level.getRegistryKey()))) {
+                        double radius = Math.min(Math.sqrt(source.getIntensity()) * 5.0, 48.0);
                         double sx = source.getX();
                         double sy = source.getY();
                         double sz = source.getZ();
@@ -270,81 +362,80 @@ public class RadiationManager {
             }
 
             if (gameTick % 20L == 0L) {
-                for (Entry<UUID, RadiationManager.EntityRadiationData> entry : new ArrayList<>(entityRadiationData.entrySet())) {
-                    RadiationManager.EntityRadiationData data = entry.getValue();
-                    if (data.isContaminated()) {
-                        Entity e = level.getEntity(entry.getKey());
-                        if (e instanceof LivingEntity entityxx) {
-                            double spreadDose = data.getDose() * 0.001;
-                            if (!(spreadDose < 1.0E-4)) {
-                                for (LivingEntity nearby : level.getEntitiesByClass(LivingEntity.class, entityxx.getBoundingBox().expand(2.0), ent -> true)) {
-                                    if (nearby != entityxx) {
-                                        if (nearby instanceof PlayerEntity player) {
-                                            RadiationManager.PlayerRadiationData playerData = getPlayerRadiationData(player);
-                                            playerData.addDose(spreadDose * 0.5);
-                                        } else {
-                                            RadiationManager.EntityRadiationData nearbyData = getEntityRadiationData(nearby);
-                                            nearbyData.addDose(spreadDose);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (gameTick % 20L == 0L) {
                 Iterator<Entry<UUID, RadiationManager.EntityRadiationData>> iterator = entityRadiationData.entrySet().iterator();
 
                 while (iterator.hasNext()) {
                     Entry<UUID, RadiationManager.EntityRadiationData> entryx = iterator.next();
                     RadiationManager.EntityRadiationData data = entryx.getValue();
-                    data.tick();
-                    if (level.getEntity(entryx.getKey()) instanceof LivingEntity living && living.isAlive()) {
-                        double dose = data.getDose();
-                        if (dose < 0.01) {
-                            iterator.remove();
-                            continue;
-                        }
-                        float glow = data.getGlowIntensity();
-                        if (data.isContaminated() && gameTick % 10L == 0L) {
-                            level.spawnParticles(
-                                    ParticleTypes.ASH, living.getX(), living.getY() + (double) living.getHeight() * 0.5, living.getZ(), 2, 0.3, 0.5, 0.3, 0.01
-                            );
-                            if (glow > 0.5F) {
-                                level.spawnParticles(
-                                        EntityEffectParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 0.3F, 1.0F, 0.3F),
-                                        living.getX(),
-                                        living.getY() + (double) living.getHeight() * 0.8,
-                                        living.getZ(),
-                                        1,
-                                        0.4,
-                                        0.2,
-                                        0.4,
-                                        0.0
-                                );
-                            }
-                        }
 
-                        if (dose >= 2.0) {
-                            living.damage(living.getDamageSources().magic(), 1.0F + (float) (dose * 0.5));
-                            if (gameTick % 100L == 0L) {
-                                living.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 200, 1, false, false));
-                            }
-                        }
-
-                        if (dose >= 4.0) {
-                            living.damage(living.getDamageSources().magic(), 2.0F);
-                        }
-
-                        if (dose >= 6.0) {
-                            living.damage(living.getDamageSources().magic(), 4.0F);
-                        }
+                    // Do not remove entities belonging to a different world during this world's tick
+                    if (data.getWorldKey() != null && !data.getWorldKey().equals(level.getRegistryKey())) {
                         continue;
                     }
 
-                    iterator.remove();
+                    Entity rawEntity = level.getEntity(entryx.getKey());
+                    if (!(rawEntity instanceof LivingEntity living) || !living.isAlive() || living.isRemoved()) {
+                        iterator.remove();
+                        continue;
+                    }
+
+                    data.tick();
+                    double dose = data.getDose();
+                    if (dose < 0.01) {
+                        iterator.remove();
+                        continue;
+                    }
+
+                    // Spread radiation to nearby entities if contaminated
+                    if (data.isContaminated()) {
+                        double spreadDose = dose * 0.001;
+                        if (spreadDose >= 1.0E-4) {
+                            for (LivingEntity nearby : level.getEntitiesByClass(LivingEntity.class, living.getBoundingBox().expand(2.0), ent -> ent != living)) {
+                                if (nearby instanceof PlayerEntity player) {
+                                    RadiationManager.PlayerRadiationData playerData = getPlayerRadiationData(player);
+                                    playerData.addDose(spreadDose * 0.5);
+                                } else {
+                                    RadiationManager.EntityRadiationData nearbyData = getEntityRadiationData(nearby);
+                                    nearbyData.addDose(spreadDose);
+                                }
+                            }
+                        }
+                    }
+
+                    float glow = data.getGlowIntensity();
+                    if (data.isContaminated() && gameTick % 10L == 0L) {
+                        level.spawnParticles(
+                                ParticleTypes.ASH, living.getX(), living.getY() + (double) living.getHeight() * 0.5, living.getZ(), 2, 0.3, 0.5, 0.3, 0.01
+                        );
+                        if (glow > 0.5F) {
+                            level.spawnParticles(
+                                    EntityEffectParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 0.3F, 1.0F, 0.3F),
+                                    living.getX(),
+                                    living.getY() + (double) living.getHeight() * 0.8,
+                                    living.getZ(),
+                                    1,
+                                    0.4,
+                                    0.2,
+                                    0.4,
+                                    0.0
+                            );
+                        }
+                    }
+
+                    if (dose >= 2.0) {
+                        living.damage(living.getDamageSources().magic(), 1.0F + (float) (dose * 0.5));
+                        if (gameTick % 100L == 0L) {
+                            living.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 200, 1, false, false));
+                        }
+                    }
+
+                    if (dose >= 4.0) {
+                        living.damage(living.getDamageSources().magic(), 2.0F);
+                    }
+
+                    if (dose >= 6.0) {
+                        living.damage(living.getDamageSources().magic(), 4.0F);
+                    }
                 }
             }
         }
@@ -392,8 +483,19 @@ public class RadiationManager {
                 }
             }
 
-            for (RadiationManager.PlayerRadiationData data : playerRadiationData.values()) {
+            Iterator<Entry<UUID, RadiationManager.PlayerRadiationData>> pIterator = playerRadiationData.entrySet().iterator();
+            while (pIterator.hasNext()) {
+                Entry<UUID, RadiationManager.PlayerRadiationData> entry = pIterator.next();
+                ServerPlayerEntity p = serverLevel.getServer().getPlayerManager().getPlayer(entry.getKey());
+                if (p == null || p.isRemoved() || !p.isAlive()) {
+                    pIterator.remove();
+                    continue;
+                }
+                RadiationManager.PlayerRadiationData data = entry.getValue();
                 data.tick();
+                if (data.getAcuteDose() < 0.001 && data.getTotalDose() < 0.001 && data.getArsStage() == 0) {
+                    pIterator.remove();
+                }
             }
 
             if (serverLevel.getServer().getTicks() % 10 == 0) {
@@ -425,7 +527,7 @@ public class RadiationManager {
             for (ServerPlayerEntity player : world.getPlayers()) {
                 BlockPos pos = player.getBlockPos();
                 double field = getRadiationAtPosition(world, pos);
-                double ash = getRadiationFromNearbyAsh(world, pos, 10);
+                double ash = getRadiationFromNearbyAsh(world, pos, 5);
                 float ambient = (float) Math.min(1.0, field / 18.0 + ash * 10000.0);
                 if (ambient > 0.01F) {
                     levels.merge(player.getUuid(), ambient, Math::max);
@@ -455,7 +557,7 @@ public class RadiationManager {
                         entry -> {
                             BlockPos sourcePos = entry.getKey();
                             double distance = Math.sqrt(
-                                    Math.pow((double) (pos.getX() - sourcePos.getX()), 2.0)
+                                     Math.pow((double) (pos.getX() - sourcePos.getX()), 2.0)
                                             + Math.pow((double) (pos.getY() - sourcePos.getY()), 2.0)
                                             + Math.pow((double) (pos.getZ() - sourcePos.getZ()), 2.0)
                             );
@@ -477,6 +579,15 @@ public class RadiationManager {
     public static class EntityRadiationData {
         private double dose = 0.0;
         private boolean isContaminated = false;
+        private RegistryKey<World> worldKey = null;
+
+        public void setWorldKey(RegistryKey<World> worldKey) {
+            this.worldKey = worldKey;
+        }
+
+        public RegistryKey<World> getWorldKey() {
+            return this.worldKey;
+        }
 
         public void addDose(double amount) {
             this.dose += amount;
@@ -706,9 +817,14 @@ public class RadiationManager {
                 for (int i = 0; i < list.size(); i++) {
                     NbtCompound s = list.getCompound(i);
                     BlockPos pos = new BlockPos(s.getInt("x"), s.getInt("y"), s.getInt("z"));
+                    RegistryKey<World> key = World.OVERWORLD;
+                    if (s.contains("dim")) {
+                        key = RegistryKey.of(RegistryKeys.WORLD, Identifier.of(s.getString("dim")));
+                    }
                     RadiationManager.radiationSources.put(
                             pos,
                             new RadiationManager.RadiationSource(
+                                    key,
                                     s.getDouble("posX"),
                                     s.getDouble("posY"),
                                     s.getDouble("posZ"),
@@ -738,6 +854,9 @@ public class RadiationManager {
                     s.putDouble("intensity", src.getIntensity());
                     s.putDouble("initialIntensity", src.getInitialIntensity());
                     s.putInt("ticksRemaining", src.getTicksRemaining());
+                    if (src.getWorldKey() != null) {
+                        s.putString("dim", src.getWorldKey().getValue().toString());
+                    }
                     list.add(s);
                 }
             }
@@ -764,8 +883,14 @@ public class RadiationManager {
         private final double z;
         private final double initialIntensity;
         private boolean isGroundZero;
+        private final RegistryKey<World> worldKey;
 
         public RadiationSource(double x, double y, double z, double intensity, int duration) {
+            this(World.OVERWORLD, x, y, z, intensity, duration);
+        }
+
+        public RadiationSource(RegistryKey<World> worldKey, double x, double y, double z, double intensity, int duration) {
+            this.worldKey = worldKey != null ? worldKey : World.OVERWORLD;
             this.x = x;
             this.y = y;
             this.z = z;
@@ -776,6 +901,11 @@ public class RadiationManager {
         }
 
         public RadiationSource(double x, double y, double z, double intensity, double initialIntensity, int ticksRemaining) {
+            this(World.OVERWORLD, x, y, z, intensity, initialIntensity, ticksRemaining);
+        }
+
+        public RadiationSource(RegistryKey<World> worldKey, double x, double y, double z, double intensity, double initialIntensity, int ticksRemaining) {
+            this.worldKey = worldKey != null ? worldKey : World.OVERWORLD;
             this.x = x;
             this.y = y;
             this.z = z;
@@ -783,6 +913,10 @@ public class RadiationManager {
             this.initialIntensity = initialIntensity;
             this.ticksRemaining = ticksRemaining;
             this.isGroundZero = intensity > 50.0;
+        }
+
+        public RegistryKey<World> getWorldKey() {
+            return this.worldKey;
         }
 
         public void tick() {

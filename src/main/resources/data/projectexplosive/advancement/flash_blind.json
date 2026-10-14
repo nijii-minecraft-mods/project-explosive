@@ -2,7 +2,7 @@
   "parent": "projectexplosive:nuclear_strike",
   "display": {
     "icon": {
-      "id": "projectexplosive:flash_goggles"
+      "id": "minecraft:tinted_glass"
     },
     "title": {
       "translate": "advancements.projectexplosive.flash_blind.title"

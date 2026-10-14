@@ -1,9 +1,4 @@
 {
-  "neoforge:conditions": [
-    {
-      "type": "projectexplosive:experimental_fire"
-    }
-  ],
   "parent": "projectexplosive:first_bomb",
   "display": {
     "icon": {

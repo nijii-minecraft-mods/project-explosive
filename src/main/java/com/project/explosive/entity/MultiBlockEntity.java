@@ -118,13 +118,19 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
             this.setBoundingBox(new Box(this.getPos(), this.getPos().add(0.1, 0.1, 0.1)));
         } else {
             Vec3d entityPos = this.getPos();
+            double clampedMinX = Math.max(-2.0, (double) this.extMinX - 0.2);
+            double clampedMinY = Math.max(-2.0, (double) this.extMinY - 0.2);
+            double clampedMinZ = Math.max(-2.0, (double) this.extMinZ - 0.2);
+            double clampedMaxX = Math.min(2.0, (double) this.extMaxX + 1.2);
+            double clampedMaxY = Math.min(3.0, (double) this.extMaxY + 1.2);
+            double clampedMaxZ = Math.min(2.0, (double) this.extMaxZ + 1.2);
             Box boundingBox = new Box(
-                    entityPos.x + (double) this.extMinX - 0.2,
-                    entityPos.y + (double) this.extMinY - 0.2,
-                    entityPos.z + (double) this.extMinZ - 0.2,
-                    entityPos.x + (double) this.extMaxX + 1.2,
-                    entityPos.y + (double) this.extMaxY + 1.2,
-                    entityPos.z + (double) this.extMaxZ + 1.2
+                    entityPos.x + clampedMinX,
+                    entityPos.y + clampedMinY,
+                    entityPos.z + clampedMinZ,
+                    entityPos.x + clampedMaxX,
+                    entityPos.y + clampedMaxY,
+                    entityPos.z + clampedMaxZ
             );
             this.setBoundingBox(boundingBox);
         }
@@ -142,6 +148,11 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
     }
 
     private void simplifiedPhysics() {
+        if (this.getY() < (double) this.getWorld().getBottomY() - 10.0) {
+            this.discard();
+            return;
+        }
+
         this.prevRotationYaw = this.rotationYaw;
         this.prevRotationPitch = this.rotationPitch;
         this.prevRotationRoll = this.rotationRoll;
@@ -181,6 +192,11 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
     }
 
     private void fullPhysics() {
+        if (this.getY() < (double) this.getWorld().getBottomY() - 10.0) {
+            this.discard();
+            return;
+        }
+
         this.prevRotationYaw = this.rotationYaw;
         this.prevRotationPitch = this.rotationPitch;
         this.prevRotationRoll = this.rotationRoll;
@@ -263,29 +279,35 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
 
     private BlockPos findAlternativePosition(BlockPos basePos, BlockPos relativePos) {
         BlockPos intendedPos = basePos.add(relativePos);
-        for (int dx = -2; dx <= 2; dx++) {
-            for (int dy = -2; dy <= 2; dy++) {
-                for (int dz = -2; dz <= 2; dz++) {
-                    BlockPos testPos = intendedPos.add(dx, dy, dz);
-                    if (this.canPlaceBlock(testPos)) {
-                        return testPos;
-                    }
-                }
+        BlockPos[] dirs = new BlockPos[]{intendedPos.up(), intendedPos.down(), intendedPos.north(), intendedPos.south(), intendedPos.east(), intendedPos.west()};
+        for (BlockPos testPos : dirs) {
+            if (this.canPlaceBlock(testPos)) {
+                return testPos;
             }
         }
         return null;
     }
 
     private void restoreBlocksToWorld() {
+        if (!this.getWorld().isChunkLoaded(this.getBlockX() >> 4, this.getBlockZ() >> 4)) {
+            return;
+        }
         BlockPos origin = this.getBlockPos();
         BlockPos actualOrigin = origin.add(this.centerOffset);
         BlockPos placementPos = this.findSuitablePlacement(actualOrigin);
         int placedBlocks = 0;
+        int maxBlocksToPlace = Math.min(this.storedBlocks.size(), 64);
         Random r = this.getWorld().getRandom();
 
         for (Entry<BlockPos, BlockState> entry : this.storedBlocks.entrySet()) {
+            if (placedBlocks >= maxBlocksToPlace) {
+                break;
+            }
             BlockPos relativePos = entry.getKey();
             BlockPos realPos = placementPos.add(relativePos);
+            if (!this.getWorld().isChunkLoaded(realPos.getX() >> 4, realPos.getZ() >> 4)) {
+                continue;
+            }
             boolean shouldBreakOnImpact = r.nextDouble() < 0.25;
             if (shouldBreakOnImpact) {
                 if (!this.getWorld().isClient) {
@@ -304,16 +326,16 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
                     );
                 }
             } else if (this.canPlaceBlock(realPos)) {
-                if (r.nextDouble() < 0.2) {
+                if (r.nextDouble() < 0.1) {
                     this.createFallingBlock(realPos, entry.getValue());
                 } else {
-                    this.getWorld().setBlockState(realPos, entry.getValue(), 3);
+                    this.getWorld().setBlockState(realPos, entry.getValue(), 18);
                 }
                 placedBlocks++;
             } else {
                 BlockPos alternativePos = this.findAlternativePosition(placementPos, relativePos);
                 if (alternativePos != null) {
-                    this.getWorld().setBlockState(alternativePos, entry.getValue(), 3);
+                    this.getWorld().setBlockState(alternativePos, entry.getValue(), 18);
                     placedBlocks++;
                 }
             }
@@ -322,13 +344,21 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
         if (placedBlocks == 0 && !this.storedBlocks.isEmpty()) {
             Entry<BlockPos, BlockState> firstEntry = this.storedBlocks.entrySet().iterator().next();
             BlockPos firstPos = placementPos.add(firstEntry.getKey());
-            this.getWorld().setBlockState(firstPos, firstEntry.getValue(), 3);
+            if (this.getWorld().isChunkLoaded(firstPos.getX() >> 4, firstPos.getZ() >> 4)) {
+                this.getWorld().setBlockState(firstPos, firstEntry.getValue(), 18);
+            }
         }
     }
 
     private void createFallingBlock(BlockPos pos, BlockState state) {
+        if (!this.getWorld().isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+            return;
+        }
         Random r = this.getWorld().getRandom();
         BlockPos spawnPos = pos.up(2 + r.nextInt(3));
+        if (!this.getWorld().isChunkLoaded(spawnPos.getX() >> 4, spawnPos.getZ() >> 4)) {
+            return;
+        }
         this.getWorld().removeBlock(spawnPos, false);
 
         try {
@@ -342,7 +372,7 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
                 fallingBlock.dropItem = false;
             }
         } catch (Exception var12) {
-            this.getWorld().setBlockState(pos, state, 3);
+            this.getWorld().setBlockState(pos, state, 18);
         }
     }
 
@@ -350,9 +380,10 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
         if (this.hasEnoughSpace(idealPos)) {
             return idealPos;
         } else {
-            for (int dx = -5; dx <= 5; dx++) {
-                for (int dy = -2; dy <= 8; dy++) {
-                    for (int dz = -5; dz <= 5; dz++) {
+            for (int dy = -1; dy <= 3; dy++) {
+                for (int dx = -2; dx <= 2; dx++) {
+                    for (int dz = -2; dz <= 2; dz++) {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
                         BlockPos testPos = idealPos.add(dx, dy, dz);
                         if (this.hasEnoughSpace(testPos)) {
                             return testPos;
@@ -365,6 +396,9 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
     }
 
     private boolean hasEnoughSpace(BlockPos centerPos) {
+        if (!this.getWorld().isChunkLoaded(centerPos.getX() >> 4, centerPos.getZ() >> 4)) {
+            return false;
+        }
         int checkedBlocks = 0;
         int freeBlocks = 0;
 
@@ -375,12 +409,21 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
             if (this.canPlaceBlock(testPos)) {
                 freeBlocks++;
             }
+            if (checkedBlocks >= 20) {
+                break;
+            }
         }
 
-        return (double) freeBlocks >= (double) checkedBlocks * 0.5;
+        return checkedBlocks == 0 || (double) freeBlocks >= (double) checkedBlocks * 0.5;
     }
 
     private boolean canPlaceBlock(BlockPos pos) {
+        if (!this.getWorld().isChunkLoaded(pos.getX() >> 4, pos.getZ() >> 4)) {
+            return false;
+        }
+        if (pos.getY() <= this.getWorld().getBottomY() || pos.getY() >= this.getWorld().getTopY()) {
+            return false;
+        }
         BlockState state = this.getWorld().getBlockState(pos);
         return state.isAir()
                 || (double) state.getHardness(this.getWorld(), pos) < 1.0
