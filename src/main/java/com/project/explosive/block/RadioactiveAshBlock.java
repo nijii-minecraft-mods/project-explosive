@@ -128,6 +128,9 @@ public class RadioactiveAshBlock extends Block implements LandingBlock, PolymerB
 
     private boolean canFall(World world, BlockPos pos) {
         BlockPos belowPos = pos.down();
+        if (world instanceof ServerWorld sw && !sw.isChunkLoaded(belowPos.getX() >> 4, belowPos.getZ() >> 4)) {
+            return false;
+        }
         BlockState belowState = world.getBlockState(belowPos);
         return belowState.isAir() || belowState.isReplaceable() || belowState.getFluidState().isStill();
     }

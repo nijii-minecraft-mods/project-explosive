@@ -105,6 +105,7 @@ public class ModItems {
                 entries.add(ModBlocks.RAW_DEAD_OAK_PLANKS_ITEM);
                 entries.add(ModBlocks.RAW_RADIOACTIVE_ASH_ITEM);
                 entries.add(ModBlocks.RAW_DEBRIS_ITEM);
+                entries.add(ModBlocks.RAW_MUNITIONS_WORKBENCH_ITEM);
                 entries.add(ModBlocks.RAW_URANIUM_ORE_ITEM);
                 entries.add(ModBlocks.RAW_DEEPSLATE_URANIUM_ORE_ITEM);
                 entries.add(ModBlocks.RAW_NETHER_SULFUR_ORE_ITEM);

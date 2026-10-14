@@ -122,14 +122,14 @@ public final class BlastCrumble {
         }
 
         scheduleCrumble(level, bx, by, bz, r + 3, 8);
-        collapseSevered(level, bx, by, bz, r);
+        DelayedTaskScheduler.schedule(level, 2L, () -> collapseSevered(level, bx, by, bz, r));
     }
 
     private static void collapseSevered(ServerWorld level, int cx, int cy, int cz, int rad) {
-        int hr = rad + 2;
+        int hr = Math.min(rad + 2, 20);
         int yMin = Math.max(level.getBottomY(), cy - rad);
-        int yTop = Math.min(level.getTopY() - 1, cy + 96);
-        LongOpenHashSet structural = new LongOpenHashSet(4096);
+        int yTop = Math.min(level.getTopY() - 1, cy + Math.min(rad * 2, 40));
+        LongOpenHashSet structural = new LongOpenHashSet(2048);
         BlockPos.Mutable p = new BlockPos.Mutable();
 
         for (int dx = -hr; dx <= hr; dx++) {

@@ -52,12 +52,22 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
         super(entityType, world);
     }
 
+    public static String sanitizeExplosionType(String type) {
+        if ("small".equalsIgnoreCase(type)) {
+            return "small";
+        } else if ("big".equalsIgnoreCase(type)) {
+            return "big";
+        } else {
+            return "nuclear";
+        }
+    }
+
     public ICBMEntity(World world, BlockPos spawnPos, BlockPos target, String explosionType) {
         super(ModEntities.RAW_ICBM, world);
         this.setPosition((double) spawnPos.getX() + 0.5, (double) spawnPos.getY(), (double) spawnPos.getZ() + 0.5);
         this.startPos = spawnPos;
         this.icbmTarget = target;
-        this.explosionType = explosionType != null ? explosionType : "nuclear";
+        this.explosionType = sanitizeExplosionType(explosionType);
         this.speedMul = speedMulFor(this.explosionType);
         this.peakHeight = peakHeightFor(this.explosionType);
         this.descentReach = 70.0 + world.getRandom().nextDouble() * 50.0;
@@ -141,13 +151,16 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
     protected void readCustomDataFromNbt(NbtCompound tag) {
         super.readCustomDataFromNbt(tag);
         if (tag.contains("ExplosionType")) {
-            this.explosionType = tag.getString("ExplosionType");
+            this.explosionType = sanitizeExplosionType(tag.getString("ExplosionType"));
             this.speedMul = speedMulFor(this.explosionType);
             this.peakHeight = peakHeightFor(this.explosionType);
             this.getDataTracker().set(DATA_WARHEAD, warheadId(this.explosionType));
+        } else {
+            this.explosionType = "nuclear";
         }
         if (tag.contains("FlightPhase")) {
-            this.phase = FlightPhase.values()[tag.getInt("FlightPhase")];
+            int phaseIdx = MathHelper.clamp(tag.getInt("FlightPhase"), 0, FlightPhase.values().length - 1);
+            this.phase = FlightPhase.values()[phaseIdx];
         }
         if (tag.contains("Separated")) {
             this.getDataTracker().set(DATA_SEPARATED, tag.getBoolean("Separated"));

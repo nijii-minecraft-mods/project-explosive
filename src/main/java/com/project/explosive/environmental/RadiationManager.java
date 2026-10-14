@@ -44,7 +44,12 @@ public class RadiationManager {
     private static final Map<BlockPos, RadiationManager.RadiationSource> radiationSources = new HashMap<>();
     private static final Map<UUID, RadiationManager.PlayerRadiationData> playerRadiationData = new HashMap<>();
     private static final Map<UUID, RadiationManager.EntityRadiationData> entityRadiationData = new HashMap<>();
-    private static final Map<Long, CachedAshRadiation> ashRadiationCache = new HashMap<>();
+    private static final Map<Long, CachedAshRadiation> ashRadiationCache = new java.util.LinkedHashMap<>(128, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Long, CachedAshRadiation> eldest) {
+            return size() > 128;
+        }
+    };
 
     private static final int MAX_RADIATION_SOURCES = 200;
     private static final int MAX_ENTITY_DATA = 500;
@@ -210,12 +215,6 @@ public class RadiationManager {
             }
         }
 
-        if (ashRadiationCache.size() > 500) {
-            ashRadiationCache.entrySet().removeIf(e -> (currentTick - e.getValue().tick()) >= 20L);
-            if (ashRadiationCache.size() > 500) {
-                ashRadiationCache.clear();
-            }
-        }
         ashRadiationCache.put(cacheKey, new CachedAshRadiation(currentTick, totalRadiation));
         return totalRadiation;
     }
@@ -498,7 +497,7 @@ public class RadiationManager {
                 }
             }
 
-            if (serverLevel.getServer().getTicks() % 10 == 0) {
+            if (serverLevel.getServer().getTicks() % 20 == 0) {
                 syncRadiationToClients(serverLevel.getServer());
             }
         }
@@ -527,8 +526,7 @@ public class RadiationManager {
             for (ServerPlayerEntity player : world.getPlayers()) {
                 BlockPos pos = player.getBlockPos();
                 double field = getRadiationAtPosition(world, pos);
-                double ash = getRadiationFromNearbyAsh(world, pos, 5);
-                float ambient = (float) Math.min(1.0, field / 18.0 + ash * 10000.0);
+                float ambient = (float) Math.min(1.0, field / 18.0);
                 if (ambient > 0.01F) {
                     levels.merge(player.getUuid(), ambient, Math::max);
                 }

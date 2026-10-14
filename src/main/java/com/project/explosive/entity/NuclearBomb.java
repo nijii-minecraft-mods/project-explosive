@@ -335,12 +335,8 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
             double dist = Math.sqrt(entity.squaredDistanceTo(x, y, z));
             if (dist <= maxDist) {
                 float factor = (float) (1.0 - dist / maxDist);
-                float damage = Math.max(12.0F, factor * 250.0F * this.blastScale);
-                if (damage >= entity.getHealth()) {
-                    entity.damage(serverLevel.getDamageSources().genericKill(), Float.MAX_VALUE);
-                } else {
-                    entity.damage(serverLevel.getDamageSources().explosion(this, this.getOwner()), damage);
-                }
+                float damage = Math.max(12.0F, factor * 300.0F * this.blastScale);
+                entity.damage(serverLevel.getDamageSources().explosion(this, this.getOwner()), damage);
 
                 int fireTicks = (int) (400.0F * factor);
                 if (fireTicks > entity.getFireTicks()) {
