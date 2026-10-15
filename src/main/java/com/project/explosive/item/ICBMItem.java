@@ -12,6 +12,7 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -29,13 +30,15 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 public class ICBMItem extends Item implements PolymerItem {
     public interface Launcher {
-        Entity launch(ServerWorld world, BlockPos spawnPos, BlockPos targetPos, String explosionType);
+        Entity launch(ServerWorld world, BlockPos spawnPos, BlockPos targetPos, String explosionType, LivingEntity owner);
     }
 
     public static Launcher LAUNCHER = null;
@@ -78,6 +81,7 @@ public class ICBMItem extends Item implements PolymerItem {
                 NbtComponent.set(DataComponentTypes.CUSTOM_DATA, itemStack, tag -> tag.putString("ExplosionType", nextType));
                 world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.PLAYERS, 0.8F, 1.2F);
                 player.sendMessage(Text.literal("Warhead: " + warheadLabel(nextType)).formatted(Formatting.YELLOW), true);
+                player.getItemCooldownManager().set(this, 6);
             }
             return TypedActionResult.success(itemStack, world.isClient());
         }
@@ -88,7 +92,16 @@ public class ICBMItem extends Item implements PolymerItem {
             BlockPos targetPos = BombTargeting.findGroundTarget(serverWorld, player, 384.0);
             if (targetPos == null) {
                 HitResult hitResult = player.raycast(256.0, 0.0F, false);
-                targetPos = BlockPos.ofFloored(hitResult.getPos());
+                if (hitResult.getType() == HitResult.Type.BLOCK) {
+                    targetPos = BlockPos.ofFloored(hitResult.getPos());
+                } else {
+                    Vec3d end = hitResult.getPos();
+                    int topY = serverWorld.getTopY(Heightmap.Type.MOTION_BLOCKING, MathHelper.floor(end.x), MathHelper.floor(end.z));
+                    if (topY <= serverWorld.getBottomY()) {
+                        topY = 64;
+                    }
+                    targetPos = new BlockPos(MathHelper.floor(end.x), topY, MathHelper.floor(end.z));
+                }
             }
 
             String explosionType = getExplosionType(itemStack);
@@ -101,7 +114,7 @@ public class ICBMItem extends Item implements PolymerItem {
             BombChunkTickets.forceTemporary(serverWorld, targetPos, 2, 400);
 
             if (LAUNCHER != null) {
-                Entity icbm = LAUNCHER.launch(serverWorld, spawnPos, targetPos, explosionType);
+                Entity icbm = LAUNCHER.launch(serverWorld, spawnPos, targetPos, explosionType, player);
                 if (icbm != null) {
                     serverWorld.spawnEntity(icbm);
                 }
@@ -112,6 +125,8 @@ public class ICBMItem extends Item implements PolymerItem {
                 fallback.setVelocity(look.multiply(2.0));
                 serverWorld.spawnEntity(fallback);
             }
+
+            player.getItemCooldownManager().set(this, 50);
 
             player.sendMessage(Text.literal("🚀 ICBM launched! Target: (" + targetPos.getX() + ", " + targetPos.getY() + ", " + targetPos.getZ() + ")").formatted(Formatting.GREEN), true);
 

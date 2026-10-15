@@ -33,7 +33,8 @@ public class RadiationDetectorItem extends Item implements PolymerItem {
     @Override
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
         if (!world.isClient() && entity instanceof ServerPlayerEntity player) {
-            boolean isHeld = player.getMainHandStack() == stack || player.getOffHandStack() == stack;
+            boolean isHeld = (player.getMainHandStack() == stack) ||
+                    (player.getOffHandStack() == stack && !(player.getMainHandStack().getItem() instanceof RadiationDetectorItem));
             if (!isHeld) {
                 return;
             }

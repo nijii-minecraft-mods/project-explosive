@@ -101,6 +101,6 @@ public class ModEntities {
                 RAW_ICBM_BOOSTER
         );
 
-        ICBMItem.LAUNCHER = (world, spawnPos, targetPos, explosionType) -> new ICBMEntity(world, spawnPos, targetPos, explosionType);
+        ICBMItem.LAUNCHER = (world, spawnPos, targetPos, explosionType, owner) -> new ICBMEntity(world, spawnPos, targetPos, explosionType, owner);
     }
 }

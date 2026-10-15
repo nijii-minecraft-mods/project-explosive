@@ -7,6 +7,7 @@ import com.project.explosive.util.ParticleUtil;
 import com.project.explosive.util.SoundUtil;
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -63,13 +64,20 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
     }
 
     public ICBMEntity(World world, BlockPos spawnPos, BlockPos target, String explosionType) {
+        this(world, spawnPos, target, explosionType, null);
+    }
+
+    public ICBMEntity(World world, BlockPos spawnPos, BlockPos target, String explosionType, LivingEntity owner) {
         super(ModEntities.RAW_ICBM, world);
+        if (owner != null) {
+            this.setOwner(owner);
+        }
         this.setPosition((double) spawnPos.getX() + 0.5, (double) spawnPos.getY(), (double) spawnPos.getZ() + 0.5);
         this.startPos = spawnPos;
         this.icbmTarget = target;
         this.explosionType = sanitizeExplosionType(explosionType);
         this.speedMul = speedMulFor(this.explosionType);
-        this.peakHeight = peakHeightFor(this.explosionType);
+        this.peakHeight = Math.max((double) spawnPos.getY() + 80.0, peakHeightFor(this.explosionType));
         this.descentReach = 70.0 + world.getRandom().nextDouble() * 50.0;
 
         this.phase = FlightPhase.BOOST;
@@ -216,6 +224,11 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
             this.flightTicks++;
             ServerWorld serverLevel = (ServerWorld) this.getWorld();
 
+            // Keep chunk loaded around flying missile
+            if (this.flightTicks % 8 == 0) {
+                BombChunkTickets.forceAround(serverLevel, this, 1);
+            }
+
             // Launch effects on first tick
             if (this.flightTicks == 1) {
                 double sx = this.getX();
@@ -341,12 +354,18 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
 
                 if ("small".equals(this.explosionType)) {
                     SmallBomb smallBomb = new SmallBomb(serverLevel, this.getX(), this.getY(), this.getZ(), true);
+                    if (this.getOwner() != null) {
+                        smallBomb.setOwner(this.getOwner());
+                    }
                     serverLevel.spawnEntity(smallBomb);
                     smallBomb.explode();
                     this.discard();
                     return;
                 } else if ("big".equals(this.explosionType)) {
                     BigBomb bigBomb = new BigBomb(serverLevel, this.getX(), this.getY(), this.getZ(), true);
+                    if (this.getOwner() != null) {
+                        bigBomb.setOwner(this.getOwner());
+                    }
                     serverLevel.spawnEntity(bigBomb);
                     bigBomb.explode();
                     this.discard();
@@ -399,5 +418,13 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
                 ParticleUtil.spawnLongDistanceParticles(serverLevel, ModParticles.SMOKE_BIG, ix, iy, iz, 1, 0.0, -0.05, 0.0);
             }
         }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        if (!this.getWorld().isClient() && this.getWorld() instanceof ServerWorld serverLevel) {
+            BombChunkTickets.release(serverLevel, this);
+        }
+        super.remove(reason);
     }
 }

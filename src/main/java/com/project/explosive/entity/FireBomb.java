@@ -46,7 +46,7 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
 
     @Override
     public EntityType<?> getPolymerEntityType(ServerPlayerEntity player) {
-        return EntityType.TNT;
+        return EntityType.POTION;
     }
 
     @Override
@@ -94,19 +94,9 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
             );
         }
 
-        if (this.fallTime > 600 && !this.hasExploded) {
-            this.explode();
-            return;
-        }
-
         if (!this.hasExploded) {
-            if (this.isOnGround()) {
+            if (this.isOnGround() || this.fallTime > 600) {
                 this.explode();
-            } else {
-                int groundY = serverLevel.getTopY(Heightmap.Type.MOTION_BLOCKING, MathHelper.floor(this.getX()), MathHelper.floor(this.getZ()));
-                if (this.getY() - (double) groundY <= 1.5) {
-                    this.explode();
-                }
             }
         }
     }

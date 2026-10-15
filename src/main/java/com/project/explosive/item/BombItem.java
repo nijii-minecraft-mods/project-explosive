@@ -112,6 +112,8 @@ public class BombItem extends Item implements PolymerItem {
             if (!player.getAbilities().creativeMode) {
                 itemStack.decrement(1);
             }
+
+            player.getItemCooldownManager().set(this, 12);
         }
 
         return TypedActionResult.success(itemStack, world.isClient());

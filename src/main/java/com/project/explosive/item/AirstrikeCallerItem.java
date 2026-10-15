@@ -1,6 +1,7 @@
 package com.project.explosive.item;
 
 import com.project.explosive.entity.ModEntities;
+import com.project.explosive.entity.SmallBomb;
 import com.project.explosive.util.BombChunkTickets;
 import com.project.explosive.util.BombTargeting;
 import com.project.explosive.util.DelayedTaskScheduler;
@@ -13,12 +14,14 @@ import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -27,6 +30,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -40,19 +44,37 @@ public class AirstrikeCallerItem extends Item implements PolymerItem {
     }
 
     @Override
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return ActionResult.PASS;
+        }
+        return this.use(context.getWorld(), player, context.getHand()).getResult();
+    }
+
+    @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         ItemStack itemStack = player.getStackInHand(hand);
 
         if (!world.isClient() && world instanceof ServerWorld serverWorld) {
             BlockPos ground = BombTargeting.findGroundTarget(serverWorld, player, 256.0);
             BlockPos targetPos;
+
             if (ground != null) {
                 targetPos = ground.up();
             } else {
-                HitResult hitResult = player.raycast(128.0, 0.0F, false);
-                targetPos = hitResult.getType() == HitResult.Type.BLOCK
-                        ? ((BlockHitResult) hitResult).getBlockPos().up()
-                        : player.getBlockPos();
+                HitResult hitResult = player.raycast(160.0, 0.0F, false);
+                if (hitResult.getType() == HitResult.Type.BLOCK) {
+                    targetPos = ((BlockHitResult) hitResult).getBlockPos().up();
+                } else {
+                    Vec3d end = hitResult.getPos();
+                    int topY = serverWorld.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, MathHelper.floor(end.x), MathHelper.floor(end.z));
+                    if (topY <= serverWorld.getBottomY()) {
+                        player.sendMessage(Text.literal("❌ No valid ground target in sight! Aim at terrain.").formatted(Formatting.RED), true);
+                        return TypedActionResult.fail(itemStack);
+                    }
+                    targetPos = new BlockPos(MathHelper.floor(end.x), topY, MathHelper.floor(end.z));
+                }
             }
 
             // Target lock sound
@@ -81,22 +103,25 @@ public class AirstrikeCallerItem extends Item implements PolymerItem {
             for (int i = 0; i < 5; i++) {
                 final BlockPos tp = targetPos;
                 DelayedTaskScheduler.schedule(serverWorld, delay, () -> spawnBombAtPosition(serverWorld, tp, player));
-                delay += (long) (20 + serverWorld.getRandom().nextInt(41));
+                delay += (long) (15 + serverWorld.getRandom().nextInt(25));
             }
+
+            player.getItemCooldownManager().set(this, 100);
 
             if (!player.getAbilities().creativeMode) {
                 itemStack.decrement(1);
             }
 
-            player.sendMessage(Text.literal("Airstrike inbound! Coordinates: (" + targetPos.getX() + ", " + targetPos.getZ() + ")").formatted(Formatting.RED), true);
+            player.sendMessage(Text.literal("✈️ Airstrike inbound! Coordinates: (" + targetPos.getX() + ", " + targetPos.getZ() + ")").formatted(Formatting.RED), true);
         }
 
         return TypedActionResult.success(itemStack, world.isClient());
     }
 
     private static void spawnBombAtPosition(ServerWorld serverWorld, BlockPos targetPos, PlayerEntity player) {
-        double offsetX = (serverWorld.getRandom().nextDouble() - 0.5) * 80.0;
-        double offsetZ = (serverWorld.getRandom().nextDouble() - 0.5) * 80.0;
+        // Tight tactical scatter radius (~20 blocks instead of 80)
+        double offsetX = (serverWorld.getRandom().nextDouble() - 0.5) * 20.0;
+        double offsetZ = (serverWorld.getRandom().nextDouble() - 0.5) * 20.0;
         int gx = MathHelper.floor((double) targetPos.getX() + offsetX);
         int gz = MathHelper.floor((double) targetPos.getZ() + offsetZ);
         int cx = gx >> 4;
@@ -109,22 +134,21 @@ public class AirstrikeCallerItem extends Item implements PolymerItem {
             groundY = 64;
         }
 
-        double bombY = (double) (groundY + 200);
+        double bombY = (double) (groundY + 120);
         double spawnX = (double) targetPos.getX() + offsetX + 0.5;
         double spawnZ = (double) targetPos.getZ() + offsetZ + 0.5;
 
         if (ModEntities.SMALL_BOMB != null && ModEntities.SMALL_BOMB.get() != null) {
-            Entity bomb = ModEntities.SMALL_BOMB.get().create(serverWorld);
-            if (bomb != null) {
-                bomb.setPosition(spawnX, bombY, spawnZ);
-                bomb.setVelocity(0.0, -0.5, 0.0);
-                serverWorld.spawnEntity(bomb);
-                return;
-            }
+            SmallBomb bomb = new SmallBomb(serverWorld, player);
+            bomb.setPosition(spawnX, bombY, spawnZ);
+            bomb.setVelocity(0.0, -0.6, 0.0);
+            serverWorld.spawnEntity(bomb);
+            return;
         }
 
         TntEntity tnt = new TntEntity(serverWorld, spawnX, bombY, spawnZ, player);
-        tnt.setVelocity(0.0, -0.5, 0.0);
+        tnt.setFuse(250);
+        tnt.setVelocity(0.0, -0.6, 0.0);
         serverWorld.spawnEntity(tnt);
     }
 

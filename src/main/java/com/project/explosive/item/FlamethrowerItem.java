@@ -13,6 +13,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -31,6 +32,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 public class FlamethrowerItem extends Item implements PolymerItem {
     private static final int MAX_USE_DURATION = 72000;
     private final PolymerModelData modelData;
@@ -38,6 +43,15 @@ public class FlamethrowerItem extends Item implements PolymerItem {
     public FlamethrowerItem(Settings settings) {
         super(settings);
         this.modelData = PolymerResourcePackUtils.requestModel(Items.BLAZE_ROD, Identifier.of("projectexplosive", "item/flamethrower"));
+    }
+
+    @Override
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return ActionResult.PASS;
+        }
+        return this.use(context.getWorld(), player, context.getHand()).getResult();
     }
 
     @Override
@@ -107,6 +121,7 @@ public class FlamethrowerItem extends Item implements PolymerItem {
                 double gravity = 0.02;
                 int maxSteps = 32;
                 int numStreams = 3;
+                Set<UUID> hitThisTick = new HashSet<>();
 
                 for (int stream = 0; stream < numStreams; stream++) {
                     double jitterX = (world.random.nextDouble() - 0.5) * 0.12;
@@ -187,19 +202,21 @@ public class FlamethrowerItem extends Item implements PolymerItem {
                             }
                         }
 
-                        // 4. Entity roasting and knockback
+                        // 4. Entity roasting and knockback (clamped to once per tick per entity)
                         if (step % 3 == 0) {
                             Box hitBox = new Box(cx - 0.7, cy - 0.7, cz - 0.7, cx + 0.7, cy + 0.7, cz + 0.7);
                             for (LivingEntity target : serverWorld.getEntitiesByClass(LivingEntity.class, hitBox, e -> e != player)) {
-                                target.setFireTicks(Math.max(target.getFireTicks(), 140));
-                                target.damage(player.getDamageSources().onFire(), 5.0F);
-                                target.addVelocity(lookVec.x * 0.15, 0.06, lookVec.z * 0.15);
+                                if (hitThisTick.add(target.getUuid())) {
+                                    target.setFireTicks(Math.max(target.getFireTicks(), 140));
+                                    target.damage(player.getDamageSources().onFire(), 4.0F);
+                                    target.addVelocity(lookVec.x * 0.18, 0.08, lookVec.z * 0.18);
+                                }
                             }
                         }
                     }
                 }
 
-                if (!player.getAbilities().creativeMode && ticksUsed % 20 == 0) {
+                if (!player.getAbilities().creativeMode && ticksUsed % 4 == 0) {
                     stack.damage(1, player, LivingEntity.getSlotForHand(player.getActiveHand()));
                 }
             }

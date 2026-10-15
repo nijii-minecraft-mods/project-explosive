@@ -4,11 +4,17 @@ import com.project.explosive.particle.ModParticles;
 import com.project.explosive.util.ParticleUtil;
 import com.project.explosive.util.SoundUtil;
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -31,7 +37,12 @@ public class IcbmBoosterEntity extends Entity implements PolymerEntity {
 
     @Override
     public EntityType<?> getPolymerEntityType(ServerPlayerEntity player) {
-        return EntityType.TNT;
+        return EntityType.FALLING_BLOCK;
+    }
+
+    @Override
+    public Packet<ClientPlayPacketListener> createSpawnPacket(EntityTrackerEntry entityTrackerEntry) {
+        return new EntitySpawnS2CPacket(this, entityTrackerEntry, Block.getRawIdFromState(Blocks.HEAVY_CORE.getDefaultState()));
     }
 
     @Override
@@ -76,40 +87,23 @@ public class IcbmBoosterEntity extends Entity implements PolymerEntity {
                                 this.getY() + 0.5,
                                 this.getZ(),
                                 1,
-                                (serverLevel.getRandom().nextDouble() - 0.5) * 0.4,
-                                0.1 + serverLevel.getRandom().nextDouble() * 0.2,
-                                (serverLevel.getRandom().nextDouble() - 0.5) * 0.4
+                                (serverLevel.getRandom().nextDouble() - 0.5) * 0.25,
+                                0.1,
+                                (serverLevel.getRandom().nextDouble() - 0.5) * 0.25
                         );
                     }
-
-                    SoundUtil.playAt(
-                            serverLevel, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_GENERIC_EXPLODE.value(), SoundCategory.NEUTRAL, 2.0F, 0.6F
-                    );
+                    SoundUtil.playAt(serverLevel, this.getX(), this.getY(), this.getZ(), SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.BLOCKS, 2.0F, 0.6F);
                 }
-
                 this.discard();
             }
         }
     }
 
     @Override
-    public boolean shouldRender(double distance) {
-        return distance < 1000000.0;
-    }
-
-    @Override
     protected void readCustomDataFromNbt(NbtCompound tag) {
-        if (tag.contains("YawSpeed")) {
-            this.yawSpeed = tag.getFloat("YawSpeed");
-        }
-        if (tag.contains("PitchSpeed")) {
-            this.pitchSpeed = tag.getFloat("PitchSpeed");
-        }
     }
 
     @Override
     protected void writeCustomDataToNbt(NbtCompound tag) {
-        tag.putFloat("YawSpeed", this.yawSpeed);
-        tag.putFloat("PitchSpeed", this.pitchSpeed);
     }
 }

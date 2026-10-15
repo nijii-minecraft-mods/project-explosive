@@ -18,8 +18,12 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -548,6 +552,14 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
     @Override
     public EntityType<?> getPolymerEntityType(ServerPlayerEntity player) {
         return EntityType.FALLING_BLOCK;
+    }
+
+    @Override
+    public Packet<ClientPlayPacketListener> createSpawnPacket(EntityTrackerEntry entityTrackerEntry) {
+        BlockState sample = !this.storedBlocks.isEmpty()
+                ? this.storedBlocks.values().iterator().next()
+                : Blocks.DIRT.getDefaultState();
+        return new EntitySpawnS2CPacket(this, entityTrackerEntry, Block.getRawIdFromState(sample));
     }
 
     @Override

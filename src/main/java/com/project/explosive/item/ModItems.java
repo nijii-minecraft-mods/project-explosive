@@ -34,9 +34,9 @@ public class ModItems {
     public static final Item RAW_SULFUR = register("sulfur", new ModItem(new Item.Settings(), net.minecraft.item.Items.GLOWSTONE_DUST, "sulfur"));
     public static final Item RAW_SALTPETER = register("saltpeter", new ModItem(new Item.Settings(), net.minecraft.item.Items.SUGAR, "saltpeter"));
     public static final Item RAW_SMALL_BOMB_HEAD = register("small_bomb_head", new ModItem(new Item.Settings(), net.minecraft.item.Items.IRON_NUGGET, "small_bomb_head"));
-    public static final Item RAW_BIG_BOMB_HEAD = register("big_bomb_head", new ModItem(new Item.Settings(), net.minecraft.item.Items.IRON_BLOCK, "big_bomb_head"));
-    public static final Item RAW_BOMB_CASING = register("bomb_casing", new ModItem(new Item.Settings(), net.minecraft.item.Items.HEAVY_CORE, "bomb_casing"));
-    public static final Item RAW_ROCKET_ENGINE = register("rocket_engine", new ModItem(new Item.Settings(), net.minecraft.item.Items.DISPENSER, "rocket_engine"));
+    public static final Item RAW_BIG_BOMB_HEAD = register("big_bomb_head", new ModItem(new Item.Settings(), net.minecraft.item.Items.IRON_INGOT, "big_bomb_head"));
+    public static final Item RAW_BOMB_CASING = register("bomb_casing", new ModItem(new Item.Settings(), net.minecraft.item.Items.NETHERITE_SCRAP, "bomb_casing"));
+    public static final Item RAW_ROCKET_ENGINE = register("rocket_engine", new ModItem(new Item.Settings(), net.minecraft.item.Items.FIREWORK_STAR, "rocket_engine"));
     public static final Item RAW_GUIDANCE_COMPUTER = register("guidance_computer", new ModItem(new Item.Settings(), net.minecraft.item.Items.RECOVERY_COMPASS, "guidance_computer"));
     public static final Item RAW_SOLID_FUEL = register("solid_fuel", new ModItem(new Item.Settings(), net.minecraft.item.Items.COAL, "solid_fuel"));
     public static final Item RAW_NUCLEAR_CORE = register("nuclear_core", new ModItem(new Item.Settings(), net.minecraft.item.Items.NETHER_STAR, "nuclear_core"));
