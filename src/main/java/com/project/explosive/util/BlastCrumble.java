@@ -100,7 +100,7 @@ public final class BlastCrumble {
             }
         }
 
-        scheduleCrumble(level, bx, by, bz, r + 4, 10);
+        scheduleCrumble(level, bx, by, bz, r + 4, 1);
         DelayedTaskScheduler.schedule(level, 2L, () -> collapseSevered(level, bx, by, bz, r));
     }
 
@@ -209,7 +209,15 @@ public final class BlastCrumble {
                 processed++;
                 if (falls < SEVER_FALL_CAP && hasAirNeighbor(level, q, x, y, z)) {
                     FallingBlockEntity falling = FallingBlockEntity.spawnFromBlock(level, p.toImmutable(), s);
-                    falling.dropItem = false;
+                    if (falling != null) {
+                        falling.dropItem = false;
+                        falling.setDestroyedOnLanding();
+                        DelayedTaskScheduler.schedule(level, 35L, () -> {
+                            if (!falling.isRemoved()) {
+                                falling.discard();
+                            }
+                        });
+                    }
                     falls++;
                 } else {
                     if (dustBudget > 0 && level.getRandom().nextFloat() < 0.15F) {
@@ -274,19 +282,23 @@ public final class BlastCrumble {
                         BlockState below = level.getBlockState(q);
                         if (!below.isSideSolidFullSquare(level, q, Direction.UP) && !isStructural(below) && horizontalSupports(level, q, wx, wy, wz) < 2) {
                             FallingBlockEntity falling = FallingBlockEntity.spawnFromBlock(level, p.toImmutable(), s);
-                            falling.dropItem = false;
+                            if (falling != null) {
+                                falling.dropItem = false;
+                                falling.setDestroyedOnLanding();
+                                DelayedTaskScheduler.schedule(level, 35L, () -> {
+                                    if (!falling.isRemoved()) {
+                                        falling.discard();
+                                    }
+                                });
+                            }
                             any = true;
-                            if (++falls >= 64) {
+                            if (++falls >= 48) {
                                 break label46;
                             }
                         }
                     }
                 }
             }
-        }
-
-        if (any) {
-            scheduleCrumble(level, cx, cy, cz, rad, passesLeft - 1);
         }
     }
 

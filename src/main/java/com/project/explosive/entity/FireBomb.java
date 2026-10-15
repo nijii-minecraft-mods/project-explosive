@@ -13,7 +13,10 @@ import net.minecraft.block.PlantBlock;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.thrown.ThrownEntity;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -262,7 +265,18 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
 
                 // Knockback outward
                 Vec3d dir = target.getPos().subtract(cx, cy, cz).normalize();
-                target.addVelocity(dir.x * (0.8 + prox * 1.2), 0.35 + prox * 0.3, dir.z * (0.8 + prox * 1.2));
+                if (dir.lengthSquared() < 0.001) {
+                    dir = new Vec3d(0.0, 1.0, 0.0);
+                }
+                target.addVelocity(dir.x * (1.2 + prox * 1.5), 0.45 + prox * 0.4, dir.z * (1.2 + prox * 1.5));
+                target.velocityModified = true;
+
+                if (target instanceof ServerPlayerEntity playerTarget) {
+                    playerTarget.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(playerTarget));
+                }
+
+                target.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, (int) (120 * prox), 0, false, false, true));
+                target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, (int) (80 * prox), 1, false, false, true));
             }
         }
     }

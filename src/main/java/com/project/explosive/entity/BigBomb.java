@@ -17,8 +17,11 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.thrown.ThrownEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -248,16 +251,16 @@ public class BigBomb extends ThrownEntity implements PolymerEntity {
 
         double craterScale = (double) (this.blastScale / 0.7F);
 
-        // Large crater
-        CraterUtil.digCraterWithEjecta(serverLevel, bx, by, bz, Math.min(18.0 * craterScale, 24.0), 0.55, 6, 1.6);
+        // Wide devastating bunker-buster crater (wide saucer, not a deep vertical pit)
+        CraterUtil.digCraterWithEjecta(serverLevel, bx, by, bz, Math.min(20.0 * craterScale, 26.0), 0.35, 6, 1.5);
 
         // Structural crumble
-        BlastCrumble.blastAndCrumble(serverLevel, bx, by, bz, Math.min(22.0 * craterScale, 28.0));
+        BlastCrumble.blastAndCrumble(serverLevel, bx, by, bz, Math.min(24.0 * craterScale, 30.0));
 
         // High damage & explosion
         serverLevel.createExplosion(this, bx, by, bz, 22.0F * (float) craterScale, World.ExplosionSourceType.TNT);
 
-        // High damage to living entities across distance
+        // High damage & violent knockback to living entities across distance
         applyDamage(serverLevel, bx, by, bz);
 
         // Sounds: ModSounds.BIG_BOMB_EXPLOSION and vanilla sounds
@@ -283,8 +286,8 @@ public class BigBomb extends ThrownEntity implements PolymerEntity {
     }
 
     private void applyDamage(ServerWorld serverLevel, double x, double y, double z) {
-        double maxDist = 40.0 * (double) (this.blastScale / 0.7F);
-        Box area = new Box(x - maxDist, y - 10.0, z - maxDist, x + maxDist, y + 20.0, z + maxDist);
+        double maxDist = 45.0 * (double) (this.blastScale / 0.7F);
+        Box area = new Box(x - maxDist, y - 12.0, z - maxDist, x + maxDist, y + 24.0, z + maxDist);
 
         for (LivingEntity entity : serverLevel.getEntitiesByClass(LivingEntity.class, area, e -> true)) {
             double dist = Math.sqrt(entity.squaredDistanceTo(x, y, z));
@@ -292,10 +295,30 @@ public class BigBomb extends ThrownEntity implements PolymerEntity {
                 float factor = (float) (1.0 - dist / maxDist);
                 float damage = Math.max(15.0F, factor * 70.0F * (this.blastScale / 0.7F));
                 entity.damage(serverLevel.getDamageSources().explosion(this, this.getOwner()), damage);
+
                 Vec3d dir = entity.getPos().subtract(x, y, z).normalize();
-                entity.addVelocity(dir.x * 1.5 * factor, 0.7 * factor, dir.z * 1.5 * factor);
+                if (dir.lengthSquared() < 0.001) {
+                    dir = new Vec3d(0.0, 1.0, 0.0);
+                }
+
+                // Violent shockwave impulse (hurls mobs through the air!)
+                double knockback = 2.8 * factor;
+                entity.addVelocity(dir.x * knockback, 0.6 * factor + 0.35, dir.z * knockback);
+                entity.velocityModified = true;
+
+                if (entity instanceof ServerPlayerEntity playerTarget) {
+                    playerTarget.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(playerTarget));
+                }
+
+                // Shellshock / Concussion
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, (int) (180 * factor), 0, false, false, true));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, (int) (140 * factor), 1, false, false, true));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, (int) (140 * factor), 1, false, false, true));
             }
         }
+
+        // Tinnitus ringing
+        SoundUtil.playAt(serverLevel, x, y, z, SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.PLAYERS, 2.0F, 1.8F);
     }
 
     private void createExplosionParticles(ServerWorld serverLevel, double cx, double cy, double cz) {

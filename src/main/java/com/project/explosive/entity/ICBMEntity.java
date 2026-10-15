@@ -1,16 +1,23 @@
 package com.project.explosive.entity;
 
+import com.project.explosive.item.ModItems;
 import com.project.explosive.particle.ModParticles;
 import com.project.explosive.sound.ModSounds;
 import com.project.explosive.util.BombChunkTickets;
 import com.project.explosive.util.ParticleUtil;
 import com.project.explosive.util.SoundUtil;
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -24,6 +31,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import org.joml.Vector3f;
 
 public class ICBMEntity extends NuclearBomb implements PolymerEntity {
     public enum FlightPhase {
@@ -48,9 +56,12 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
 
     private double speedMul = 0.78;
     private double descentReach = 70.0;
+    private ElementHolder holder;
+    private ItemDisplayElement displayElement;
 
     public ICBMEntity(EntityType<? extends ICBMEntity> entityType, World world) {
         super(entityType, world);
+        this.initVirtualDisplay(world);
     }
 
     public static String sanitizeExplosionType(String type) {
@@ -83,6 +94,20 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
         this.phase = FlightPhase.BOOST;
         this.setVelocity(0.0, 0.5, 0.0);
         this.setNoGravity(true);
+        this.initVirtualDisplay(world);
+    }
+
+    private void initVirtualDisplay(World world) {
+        if (!world.isClient() && world instanceof ServerWorld) {
+            this.holder = new ElementHolder();
+            ItemStack missileStack = new ItemStack(ModItems.RAW_ICBM_ITEM);
+            String type = this.explosionType != null ? this.explosionType : "nuclear";
+            NbtComponent.set(DataComponentTypes.CUSTOM_DATA, missileStack, tag -> tag.putString("ExplosionType", type));
+            this.displayElement = new ItemDisplayElement(missileStack);
+            this.displayElement.setScale(new Vector3f(2.4F, 2.4F, 2.4F));
+            this.holder.addElement(this.displayElement);
+            EntityAttachment.ofTicking(this.holder, this);
+        }
     }
 
     private static int warheadId(String type) {
@@ -134,7 +159,7 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
 
     @Override
     public EntityType<?> getPolymerEntityType(ServerPlayerEntity player) {
-        return EntityType.FIREWORK_ROCKET;
+        return EntityType.INTERACTION;
     }
 
     @Override
@@ -249,6 +274,11 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
 
             // Spawns rocket exhaust particles during flight
             spawnRocketExhaustParticles(serverLevel);
+
+            if (this.displayElement != null) {
+                this.displayElement.setYaw(this.getYaw());
+                this.displayElement.setPitch(this.getPitch());
+            }
 
             double dx = (double) this.icbmTarget.getX() + 0.5 - this.getX();
             double dz = (double) this.icbmTarget.getZ() + 0.5 - this.getZ();
@@ -422,6 +452,9 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
 
     @Override
     public void remove(RemovalReason reason) {
+        if (this.holder != null && this.holder.getAttachment() != null) {
+            this.holder.getAttachment().destroy();
+        }
         if (!this.getWorld().isClient() && this.getWorld() instanceof ServerWorld serverLevel) {
             BombChunkTickets.release(serverLevel, this);
         }

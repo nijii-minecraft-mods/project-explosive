@@ -101,9 +101,10 @@ public class AirstrikeCallerItem extends Item implements PolymerItem {
 
             long delay = 0L;
             for (int i = 0; i < 5; i++) {
+                final int index = i;
                 final BlockPos tp = targetPos;
-                DelayedTaskScheduler.schedule(serverWorld, delay, () -> spawnBombAtPosition(serverWorld, tp, player));
-                delay += (long) (15 + serverWorld.getRandom().nextInt(25));
+                DelayedTaskScheduler.schedule(serverWorld, delay, () -> spawnBombAtPosition(serverWorld, tp, player, index));
+                delay += (long) (12 + serverWorld.getRandom().nextInt(16));
             }
 
             player.getItemCooldownManager().set(this, 100);
@@ -118,10 +119,28 @@ public class AirstrikeCallerItem extends Item implements PolymerItem {
         return TypedActionResult.success(itemStack, world.isClient());
     }
 
-    private static void spawnBombAtPosition(ServerWorld serverWorld, BlockPos targetPos, PlayerEntity player) {
-        // Tight tactical scatter radius (~20 blocks instead of 80)
-        double offsetX = (serverWorld.getRandom().nextDouble() - 0.5) * 20.0;
-        double offsetZ = (serverWorld.getRandom().nextDouble() - 0.5) * 20.0;
+    private static void spawnBombAtPosition(ServerWorld serverWorld, BlockPos targetPos, PlayerEntity player, int index) {
+        Vec3d look = player.getRotationVector();
+        double dirX = look.x;
+        double dirZ = look.z;
+        double len = Math.sqrt(dirX * dirX + dirZ * dirZ);
+        if (len < 0.001) {
+            dirX = 1.0;
+            dirZ = 0.0;
+        } else {
+            dirX /= len;
+            dirZ /= len;
+        }
+        double perpX = -dirZ;
+        double perpZ = dirX;
+
+        // Spread across a 50-block carpet-bombing corridor along the strike vector
+        double forwardOffset = ((double) index - 2.0) * 11.0 + (serverWorld.getRandom().nextDouble() - 0.5) * 4.0;
+        double lateralOffset = (serverWorld.getRandom().nextDouble() - 0.5) * 16.0;
+
+        double offsetX = dirX * forwardOffset + perpX * lateralOffset;
+        double offsetZ = dirZ * forwardOffset + perpZ * lateralOffset;
+
         int gx = MathHelper.floor((double) targetPos.getX() + offsetX);
         int gz = MathHelper.floor((double) targetPos.getZ() + offsetZ);
         int cx = gx >> 4;
@@ -134,21 +153,22 @@ public class AirstrikeCallerItem extends Item implements PolymerItem {
             groundY = 64;
         }
 
-        double bombY = (double) (groundY + 120);
+        double bombY = (double) (groundY + 80);
         double spawnX = (double) targetPos.getX() + offsetX + 0.5;
         double spawnZ = (double) targetPos.getZ() + offsetZ + 0.5;
 
         if (ModEntities.SMALL_BOMB != null && ModEntities.SMALL_BOMB.get() != null) {
             SmallBomb bomb = new SmallBomb(serverWorld, player);
+            bomb.setShallowAirstrike(true); // Shallow wide surface devastation, no deep pit drilling!
             bomb.setPosition(spawnX, bombY, spawnZ);
-            bomb.setVelocity(0.0, -0.6, 0.0);
+            bomb.setVelocity(0.0, -0.7, 0.0);
             serverWorld.spawnEntity(bomb);
             return;
         }
 
         TntEntity tnt = new TntEntity(serverWorld, spawnX, bombY, spawnZ, player);
-        tnt.setFuse(250);
-        tnt.setVelocity(0.0, -0.6, 0.0);
+        tnt.setFuse(200);
+        tnt.setVelocity(0.0, -0.7, 0.0);
         serverWorld.spawnEntity(tnt);
     }
 

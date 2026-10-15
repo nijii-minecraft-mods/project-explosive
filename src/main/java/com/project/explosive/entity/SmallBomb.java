@@ -16,8 +16,11 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.thrown.ThrownEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -40,6 +43,7 @@ public class SmallBomb extends ThrownEntity implements PolymerEntity {
     protected boolean launchSoundPlayed = false;
     protected boolean triggeredByBomb = false;
     protected float blastScale = 0.4F;
+    private boolean shallowAirstrike = false;
 
     private boolean shockwaveActive = false;
     private int shockwaveTicks = 0;
@@ -67,6 +71,14 @@ public class SmallBomb extends ThrownEntity implements PolymerEntity {
     @Override
     public EntityType<?> getPolymerEntityType(ServerPlayerEntity player) {
         return EntityType.TNT;
+    }
+
+    public void setShallowAirstrike(boolean shallow) {
+        this.shallowAirstrike = shallow;
+    }
+
+    public boolean isShallowAirstrike() {
+        return this.shallowAirstrike;
     }
 
     public void setBlastScale(float s) {
@@ -247,16 +259,20 @@ public class SmallBomb extends ThrownEntity implements PolymerEntity {
 
         double craterScale = (double) (this.blastScale / 0.4F);
 
-        // Moderate crater
-        CraterUtil.digCraterWithEjecta(serverLevel, bx, by, bz, Math.min(10.0 * craterScale, 15.0), 0.5, 4, 1.2);
+        // Airstrike bombs focus on wide surface devastation rather than digging deep pits
+        double radius = this.shallowAirstrike ? Math.min(14.0 * craterScale, 18.0) : Math.min(10.0 * craterScale, 14.0);
+        double depthRatio = this.shallowAirstrike ? 0.15 : 0.28;
 
-        // Moderate crumble
-        BlastCrumble.blastAndCrumble(serverLevel, bx, by, bz, Math.min(12.0 * craterScale, 18.0));
+        // Wide saucer crater
+        CraterUtil.digCraterWithEjecta(serverLevel, bx, by, bz, radius, depthRatio, 4, 1.3);
+
+        // Surface blast crumble
+        BlastCrumble.blastAndCrumble(serverLevel, bx, by, bz, radius + 2.0);
 
         // Moderate damage & explosion
-        serverLevel.createExplosion(this, bx, by, bz, 9.0F * (float) craterScale, World.ExplosionSourceType.TNT);
+        serverLevel.createExplosion(this, bx, by, bz, 8.0F * (float) craterScale, World.ExplosionSourceType.TNT);
 
-        // Moderate damage to living entities across distance
+        // Massive knockback, damage, and concussion effect to living entities
         applyDamage(serverLevel, bx, by, bz);
 
         // Sounds: ModSounds.SMALL_BOMB_EXPLOSION and vanilla sounds
@@ -276,8 +292,8 @@ public class SmallBomb extends ThrownEntity implements PolymerEntity {
     }
 
     private void applyDamage(ServerWorld serverLevel, double x, double y, double z) {
-        double maxDist = 20.0 * (double) (this.blastScale / 0.4F);
-        Box area = new Box(x - maxDist, y - 6.0, z - maxDist, x + maxDist, y + 12.0, z + maxDist);
+        double maxDist = (this.shallowAirstrike ? 26.0 : 20.0) * (double) (this.blastScale / 0.4F);
+        Box area = new Box(x - maxDist, y - 8.0, z - maxDist, x + maxDist, y + 16.0, z + maxDist);
 
         for (LivingEntity entity : serverLevel.getEntitiesByClass(LivingEntity.class, area, e -> true)) {
             double dist = Math.sqrt(entity.squaredDistanceTo(x, y, z));
@@ -285,10 +301,30 @@ public class SmallBomb extends ThrownEntity implements PolymerEntity {
                 float factor = (float) (1.0 - dist / maxDist);
                 float damage = Math.max(8.0F, factor * 35.0F * (this.blastScale / 0.4F));
                 entity.damage(serverLevel.getDamageSources().explosion(this, this.getOwner()), damage);
+
                 Vec3d dir = entity.getPos().subtract(x, y, z).normalize();
-                entity.addVelocity(dir.x * 1.0 * factor, 0.5 * factor, dir.z * 1.0 * factor);
+                if (dir.lengthSquared() < 0.001) {
+                    dir = new Vec3d(0.0, 1.0, 0.0);
+                }
+
+                // Violent radial knockback (sends mobs flying!)
+                double knockback = (this.shallowAirstrike ? 2.4 : 1.8) * factor;
+                entity.addVelocity(dir.x * knockback, 0.4 * factor + 0.25, dir.z * knockback);
+                entity.velocityModified = true;
+
+                if (entity instanceof ServerPlayerEntity playerTarget) {
+                    playerTarget.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(playerTarget));
+                }
+
+                // Concussion / Stun / Shellshock effect
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, (int) (140 * factor), 0, false, false, true));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, (int) (100 * factor), 1, false, false, true));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, (int) (100 * factor), 0, false, false, true));
             }
         }
+
+        // Tinnitus shellshock ringing
+        SoundUtil.playAt(serverLevel, x, y, z, SoundEvents.BLOCK_BELL_RESONATE, SoundCategory.PLAYERS, 1.4F, 1.9F);
     }
 
     private void createExplosionParticles(ServerWorld serverLevel, double cx, double cy, double cz) {

@@ -25,6 +25,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.thrown.ThrownEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -270,7 +271,7 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
 
         // 2. Spawns hemispherical crater via CraterUtil.digCraterWithEjecta(...)
         int craterRadius = Math.max(20, (int) (36.0F * this.blastScale));
-        CraterUtil.digCraterWithEjecta(serverLevel, boomX, boomY, boomZ, craterRadius, 0.6, 8, 2.0);
+        CraterUtil.digCraterWithEjecta(serverLevel, boomX, boomY, boomZ, craterRadius, 0.30, 8, 2.0);
 
         // 3. Spawns mushroom cloud via ParticleUtil.spawnMushroomCloud(...)
         ParticleUtil.spawnMushroomCloud(serverLevel, boomX, boomY, boomZ, (double) this.blastScale);
@@ -375,8 +376,20 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
                 }
 
                 Vec3d dir = entity.getPos().subtract(this.getPos()).normalize();
-                double knock = Math.max(0.4, factor * 4.0);
-                entity.addVelocity(dir.x * knock, 1.2 * factor + 0.3, dir.z * knock);
+                if (dir.lengthSquared() < 0.001) {
+                    dir = new Vec3d(0.0, 1.0, 0.0);
+                }
+                double knock = Math.max(0.6, factor * 4.5);
+                entity.addVelocity(dir.x * knock, 1.2 * factor + 0.4, dir.z * knock);
+                entity.velocityModified = true;
+
+                if (entity instanceof ServerPlayerEntity playerTarget) {
+                    playerTarget.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(playerTarget));
+                }
+
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, (int) (300 * factor), 1, false, false, true));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, (int) (200 * factor), 2, false, false, true));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, (int) (200 * factor), 2, false, false, true));
             }
         }
     }

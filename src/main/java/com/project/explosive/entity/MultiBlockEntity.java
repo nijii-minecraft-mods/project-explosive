@@ -2,6 +2,7 @@ package com.project.explosive.entity;
 
 import com.project.explosive.Config;
 import com.project.explosive.util.ParticleUtil;
+import com.project.explosive.util.SoundUtil;
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import java.util.HashMap;
 import java.util.Map;
@@ -189,7 +190,7 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
             }
         }
 
-        if (this.age > 600) {
+        if (this.age > 45) {
             this.restoreBlocksToWorld();
             this.discard();
         }
@@ -258,7 +259,7 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
             }
         }
 
-        if (this.age > 600) {
+        if (this.age > 45) {
             this.restoreBlocksToWorld();
             this.discard();
         }
@@ -293,64 +294,19 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
     }
 
     private void restoreBlocksToWorld() {
-        if (!this.getWorld().isChunkLoaded(this.getBlockX() >> 4, this.getBlockZ() >> 4)) {
-            return;
-        }
-        BlockPos origin = this.getBlockPos();
-        BlockPos actualOrigin = origin.add(this.centerOffset);
-        BlockPos placementPos = this.findSuitablePlacement(actualOrigin);
-        int placedBlocks = 0;
-        int maxBlocksToPlace = Math.min(this.storedBlocks.size(), 64);
-        Random r = this.getWorld().getRandom();
-
-        for (Entry<BlockPos, BlockState> entry : this.storedBlocks.entrySet()) {
-            if (placedBlocks >= maxBlocksToPlace) {
-                break;
+        if (!this.getWorld().isClient() && this.getWorld() instanceof ServerWorld serverLevel && !this.storedBlocks.isEmpty()) {
+            for (Entry<BlockPos, BlockState> entry : this.storedBlocks.entrySet()) {
+                BlockPos realPos = this.getBlockPos().add(entry.getKey());
+                BlockStateParticleEffect blockParticle = new BlockStateParticleEffect(ParticleTypes.BLOCK, entry.getValue());
+                serverLevel.spawnParticles(
+                        blockParticle,
+                        (double) realPos.getX() + 0.5,
+                        (double) realPos.getY() + 0.5,
+                        (double) realPos.getZ() + 0.5,
+                        2, 0.2, 0.2, 0.2, 0.05
+                );
             }
-            BlockPos relativePos = entry.getKey();
-            BlockPos realPos = placementPos.add(relativePos);
-            if (!this.getWorld().isChunkLoaded(realPos.getX() >> 4, realPos.getZ() >> 4)) {
-                continue;
-            }
-            boolean shouldBreakOnImpact = r.nextDouble() < 0.25;
-            if (shouldBreakOnImpact) {
-                if (!this.getWorld().isClient) {
-                    ServerWorld serverLevel = (ServerWorld) this.getWorld();
-                    BlockStateParticleEffect blockParticle = new BlockStateParticleEffect(ParticleTypes.BLOCK, entry.getValue());
-                    serverLevel.spawnParticles(
-                            blockParticle,
-                            (double) realPos.getX() + 0.5,
-                            (double) realPos.getY() + 0.5,
-                            (double) realPos.getZ() + 0.5,
-                            3,
-                            0.2,
-                            0.2,
-                            0.2,
-                            0.05
-                    );
-                }
-            } else if (this.canPlaceBlock(realPos)) {
-                if (r.nextDouble() < 0.1) {
-                    this.createFallingBlock(realPos, entry.getValue());
-                } else {
-                    this.getWorld().setBlockState(realPos, entry.getValue(), 18);
-                }
-                placedBlocks++;
-            } else {
-                BlockPos alternativePos = this.findAlternativePosition(placementPos, relativePos);
-                if (alternativePos != null) {
-                    this.getWorld().setBlockState(alternativePos, entry.getValue(), 18);
-                    placedBlocks++;
-                }
-            }
-        }
-
-        if (placedBlocks == 0 && !this.storedBlocks.isEmpty()) {
-            Entry<BlockPos, BlockState> firstEntry = this.storedBlocks.entrySet().iterator().next();
-            BlockPos firstPos = placementPos.add(firstEntry.getKey());
-            if (this.getWorld().isChunkLoaded(firstPos.getX() >> 4, firstPos.getZ() >> 4)) {
-                this.getWorld().setBlockState(firstPos, firstEntry.getValue(), 18);
-            }
+            SoundUtil.playAt(serverLevel, this.getX(), this.getY(), this.getZ(), SoundEvents.BLOCK_STONE_BREAK, SoundCategory.BLOCKS, 2.0F, 0.7F);
         }
     }
 
