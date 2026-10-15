@@ -95,9 +95,9 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
 
     private static double peakHeightFor(String type) {
         return switch (type) {
-            case "small" -> 360.0;
-            case "big" -> 450.0;
-            default -> 550.0;
+            case "small" -> 160.0;
+            case "big" -> 180.0;
+            default -> 210.0;
         };
     }
 
@@ -126,7 +126,7 @@ public class ICBMEntity extends NuclearBomb implements PolymerEntity {
 
     @Override
     public EntityType<?> getPolymerEntityType(ServerPlayerEntity player) {
-        return EntityType.TNT;
+        return EntityType.FIREWORK_ROCKET;
     }
 
     @Override

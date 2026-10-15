@@ -94,7 +94,7 @@ public class FireBomb extends ThrownEntity implements PolymerEntity {
             );
         }
 
-        if (this.fallTime > 200 && !this.hasExploded) {
+        if (this.fallTime > 600 && !this.hasExploded) {
             this.explode();
             return;
         }

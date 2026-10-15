@@ -1,5 +1,7 @@
 package com.project.explosive.item;
 
+import com.project.explosive.entity.ModEntities;
+import com.project.explosive.entity.NuclearBomb;
 import com.project.explosive.sound.ModSounds;
 import com.project.explosive.util.BombChunkTickets;
 import com.project.explosive.util.BombTargeting;
@@ -10,43 +12,35 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.function.Consumer;
-
 public class ICBMItem extends Item implements PolymerItem {
-    private static final String[] EXPLOSION_TYPES = new String[]{"small", "big", "nuclear"};
-    private static final String[] WARHEAD_LABELS = new String[]{"Small", "Big", "Nuclear"};
-
-    @FunctionalInterface
-    public interface ICBMLauncher {
+    public interface Launcher {
         Entity launch(ServerWorld world, BlockPos spawnPos, BlockPos targetPos, String explosionType);
     }
 
-    public static ICBMLauncher LAUNCHER = null;
+    public static Launcher LAUNCHER = null;
 
+    private static final String[] EXPLOSION_TYPES = new String[]{"small", "big", "nuclear"};
     private final PolymerModelData modelData;
     private final PolymerModelData modelDataSmall;
     private final PolymerModelData modelDataBig;
@@ -61,9 +55,15 @@ public class ICBMItem extends Item implements PolymerItem {
     }
 
     @Override
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        return this.use(context.getWorld(), context.getPlayer(), context.getHand()).getResult();
+    }
+
+    @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         ItemStack itemStack = player.getStackInHand(hand);
 
+        // Sneak + Right Click = Cycle Warhead Type
         if (player.isSneaking()) {
             if (!world.isClient()) {
                 String currentType = getExplosionType(itemStack);
@@ -82,7 +82,9 @@ public class ICBMItem extends Item implements PolymerItem {
             return TypedActionResult.success(itemStack, world.isClient());
         }
 
+        // Normal Right Click = Launch Missile towards crosshair
         if (!world.isClient() && world instanceof ServerWorld serverWorld) {
+            Vec3d look = player.getRotationVector();
             BlockPos targetPos = BombTargeting.findGroundTarget(serverWorld, player, 384.0);
             if (targetPos == null) {
                 HitResult hitResult = player.raycast(256.0, 0.0F, false);
@@ -90,24 +92,13 @@ public class ICBMItem extends Item implements PolymerItem {
             }
 
             String explosionType = getExplosionType(itemStack);
-            double angle = world.random.nextDouble() * 2.0 * Math.PI;
-            double distance = 96.0 + world.random.nextDouble() * 64.0;
-            double spawnX = player.getX() + Math.cos(angle) * distance;
-            double spawnZ = player.getZ() + Math.sin(angle) * distance;
-            int cx = (int) spawnX >> 4;
-            int cz = (int) spawnZ >> 4;
-            if (!serverWorld.isChunkLoaded(cx, cz)) {
-                spawnX = player.getX() + Math.cos(angle) * 32.0;
-                spawnZ = player.getZ() + Math.sin(angle) * 32.0;
-            }
-            BombChunkTickets.forceTemporary(serverWorld, new BlockPos((int) spawnX, 0, (int) spawnZ), 1, 200);
 
-            int spawnY = serverWorld.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (int) spawnX, (int) spawnZ);
-            if (spawnY <= serverWorld.getBottomY()) {
-                spawnY = 64;
-            }
+            // Launch missile directly in front/above the player so the launch is completely visible
+            Vec3d launchPos = player.getEyePos().add(look.multiply(2.0)).add(0.0, 0.5, 0.0);
+            BlockPos spawnPos = BlockPos.ofFloored(launchPos);
 
-            BlockPos spawnPos = new BlockPos((int) spawnX, spawnY + 1, (int) spawnZ);
+            BombChunkTickets.forceTemporary(serverWorld, spawnPos, 2, 200);
+            BombChunkTickets.forceTemporary(serverWorld, targetPos, 2, 400);
 
             if (LAUNCHER != null) {
                 Entity icbm = LAUNCHER.launch(serverWorld, spawnPos, targetPos, explosionType);
@@ -116,12 +107,13 @@ public class ICBMItem extends Item implements PolymerItem {
                 }
             } else {
                 SoundUtil.playAt(serverWorld, player.getX(), player.getY(), player.getZ(), ModSounds.ICBM_IGNITION, SoundCategory.BLOCKS, 2.0F, 1.0F);
-                TntEntity fallbackTnt = new TntEntity(serverWorld, (double) targetPos.getX() + 0.5, (double) targetPos.getY() + 100.0, (double) targetPos.getZ() + 0.5, player);
-                fallbackTnt.setVelocity(0.0, -1.0, 0.0);
-                serverWorld.spawnEntity(fallbackTnt);
+                NuclearBomb fallback = new NuclearBomb(serverWorld, player);
+                fallback.setPosition(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+                fallback.setVelocity(look.multiply(2.0));
+                serverWorld.spawnEntity(fallback);
             }
 
-            player.sendMessage(Text.literal("ICBM deployed to (" + targetPos.getX() + ", " + targetPos.getY() + ", " + targetPos.getZ() + ")").formatted(Formatting.RED), true);
+            player.sendMessage(Text.literal("🚀 ICBM launched! Target: (" + targetPos.getX() + ", " + targetPos.getY() + ", " + targetPos.getZ() + ")").formatted(Formatting.GREEN), true);
 
             if (!player.getAbilities().creativeMode) {
                 itemStack.decrement(1);
@@ -133,25 +125,19 @@ public class ICBMItem extends Item implements PolymerItem {
 
     private static String getExplosionType(ItemStack stack) {
         NbtComponent customData = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT);
-        String type = customData.copyNbt().getString("ExplosionType");
-        return type.isEmpty() ? "small" : type;
+        if (customData.contains("ExplosionType")) {
+            return customData.copyNbt().getString("ExplosionType");
+        }
+        return "nuclear";
     }
 
     private static String warheadLabel(String type) {
-        for (int i = 0; i < EXPLOSION_TYPES.length; i++) {
-            if (EXPLOSION_TYPES[i].equals(type)) {
-                return WARHEAD_LABELS[i];
-            }
-        }
-        return "Small";
-    }
-
-    @Override
-    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
-        super.appendTooltip(stack, context, tooltip, type);
-        String explosionType = getExplosionType(stack);
-        tooltip.add(Text.literal("Type: " + warheadLabel(explosionType)).formatted(Formatting.GRAY));
-        tooltip.add(Text.literal("Shift + click — cycle").formatted(Formatting.DARK_GRAY));
+        return switch (type) {
+            case "small" -> "Light (HE)";
+            case "big" -> "Heavy (Bunker Buster)";
+            case "nuclear" -> "Thermonuclear (Fat Man)";
+            default -> type;
+        };
     }
 
     @Override

@@ -199,9 +199,10 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
             this.checkForBombCollisions();
         }
 
-        if (this.isOnGround() && (this.fallTime > 5 || this instanceof ICBMEntity)) {
+        boolean isIcbmFlying = (this instanceof ICBMEntity icbm && icbm.getFlightPhase() != ICBMEntity.FlightPhase.DIVE);
+        if (!isIcbmFlying && this.isOnGround() && this.fallTime > 2) {
             this.explode();
-        } else if (this.fallTime >= 100) {
+        } else if (this.fallTime >= 600) {
             this.explode();
         }
     }

@@ -192,7 +192,7 @@ public class SmallBomb extends ThrownEntity implements PolymerEntity {
             this.checkForBombCollisions();
         }
 
-        if (this.fallTime > 60 || this.isOnGround()) {
+        if (this.isOnGround() || this.fallTime > 600) {
             this.explode();
         }
     }
