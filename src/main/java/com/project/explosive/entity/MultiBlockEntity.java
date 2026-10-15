@@ -119,26 +119,8 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
     }
 
     private void calculateAndSetBoundingBox() {
-        if (!this.hasExtents) {
-            this.setBoundingBox(new Box(this.getPos(), this.getPos().add(0.1, 0.1, 0.1)));
-        } else {
-            Vec3d entityPos = this.getPos();
-            double clampedMinX = Math.max(-2.0, (double) this.extMinX - 0.2);
-            double clampedMinY = Math.max(-2.0, (double) this.extMinY - 0.2);
-            double clampedMinZ = Math.max(-2.0, (double) this.extMinZ - 0.2);
-            double clampedMaxX = Math.min(2.0, (double) this.extMaxX + 1.2);
-            double clampedMaxY = Math.min(3.0, (double) this.extMaxY + 1.2);
-            double clampedMaxZ = Math.min(2.0, (double) this.extMaxZ + 1.2);
-            Box boundingBox = new Box(
-                    entityPos.x + clampedMinX,
-                    entityPos.y + clampedMinY,
-                    entityPos.z + clampedMinZ,
-                    entityPos.x + clampedMaxX,
-                    entityPos.y + clampedMaxY,
-                    entityPos.z + clampedMaxZ
-            );
-            this.setBoundingBox(boundingBox);
-        }
+        Vec3d p = this.getPos();
+        this.setBoundingBox(new Box(p.x - 0.2, p.y, p.z - 0.2, p.x + 0.2, p.y + 0.4, p.z + 0.2));
     }
 
     @Override
@@ -190,7 +172,7 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
             }
         }
 
-        if (this.age > 45) {
+        if (this.age > 300) {
             this.restoreBlocksToWorld();
             this.discard();
         }
@@ -259,7 +241,7 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
             }
         }
 
-        if (this.age > 45) {
+        if (this.age > 300) {
             this.restoreBlocksToWorld();
             this.discard();
         }
@@ -295,16 +277,20 @@ public class MultiBlockEntity extends Entity implements PolymerEntity {
 
     private void restoreBlocksToWorld() {
         if (!this.getWorld().isClient() && this.getWorld() instanceof ServerWorld serverLevel && !this.storedBlocks.isEmpty()) {
+            BlockPos origin = this.getBlockPos().add(this.centerOffset);
             for (Entry<BlockPos, BlockState> entry : this.storedBlocks.entrySet()) {
-                BlockPos realPos = this.getBlockPos().add(entry.getKey());
-                BlockStateParticleEffect blockParticle = new BlockStateParticleEffect(ParticleTypes.BLOCK, entry.getValue());
-                serverLevel.spawnParticles(
-                        blockParticle,
-                        (double) realPos.getX() + 0.5,
-                        (double) realPos.getY() + 0.5,
-                        (double) realPos.getZ() + 0.5,
-                        2, 0.2, 0.2, 0.2, 0.05
-                );
+                BlockPos targetPos = origin.add(entry.getKey());
+                if (!serverLevel.isChunkLoaded(targetPos.getX() >> 4, targetPos.getZ() >> 4)) {
+                    continue;
+                }
+                Box check = new Box(targetPos);
+                if (!serverLevel.getEntitiesByClass(ServerPlayerEntity.class, check, p -> true).isEmpty()) {
+                    continue;
+                }
+                BlockState current = serverLevel.getBlockState(targetPos);
+                if (current.isAir() || current.isReplaceable()) {
+                    serverLevel.setBlockState(targetPos, entry.getValue(), 3);
+                }
             }
             SoundUtil.playAt(serverLevel, this.getX(), this.getY(), this.getZ(), SoundEvents.BLOCK_STONE_BREAK, SoundCategory.BLOCKS, 2.0F, 0.7F);
         }

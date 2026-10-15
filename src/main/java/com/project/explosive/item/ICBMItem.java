@@ -106,12 +106,22 @@ public class ICBMItem extends Item implements PolymerItem {
 
             String explosionType = getExplosionType(itemStack);
 
-            // Launch missile directly in front/above the player so the launch is completely visible
-            Vec3d launchPos = player.getEyePos().add(look.multiply(2.0)).add(0.0, 0.5, 0.0);
-            BlockPos spawnPos = BlockPos.ofFloored(launchPos);
+            // In the original mod, the ICBM launches from the distance (240..340 blocks away) across the sky towards the target
+            double angle = world.random.nextDouble() * 2.0 * Math.PI;
+            double distance = 240.0 + world.random.nextDouble() * 100.0;
+            double spawnX = targetPos.getX() + Math.cos(angle) * distance;
+            double spawnZ = targetPos.getZ() + Math.sin(angle) * distance;
+            int cx = (int) spawnX >> 4;
+            int cz = (int) spawnZ >> 4;
+            serverWorld.getChunk(cx, cz);
+            int groundY = serverWorld.getTopY(Heightmap.Type.MOTION_BLOCKING, (int) spawnX, (int) spawnZ);
+            if (groundY <= serverWorld.getBottomY()) {
+                groundY = 64;
+            }
+            BlockPos spawnPos = new BlockPos((int) spawnX, groundY + 1, (int) spawnZ);
 
-            BombChunkTickets.forceTemporary(serverWorld, spawnPos, 2, 200);
-            BombChunkTickets.forceTemporary(serverWorld, targetPos, 2, 400);
+            BombChunkTickets.forceTemporary(serverWorld, spawnPos, 2, 400);
+            BombChunkTickets.forceTemporary(serverWorld, targetPos, 2, 600);
 
             if (LAUNCHER != null) {
                 Entity icbm = LAUNCHER.launch(serverWorld, spawnPos, targetPos, explosionType, player);
@@ -122,13 +132,17 @@ public class ICBMItem extends Item implements PolymerItem {
                 SoundUtil.playAt(serverWorld, player.getX(), player.getY(), player.getZ(), ModSounds.ICBM_IGNITION, SoundCategory.BLOCKS, 2.0F, 1.0F);
                 NuclearBomb fallback = new NuclearBomb(serverWorld, player);
                 fallback.setPosition(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
-                fallback.setVelocity(look.multiply(2.0));
+                fallback.setVelocity(new Vec3d(0.0, 1.5, 0.0));
                 serverWorld.spawnEntity(fallback);
             }
 
-            player.getItemCooldownManager().set(this, 50);
+            // Distant launch rumble
+            SoundUtil.playAt(serverWorld, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER, SoundCategory.MASTER, 5.0F, 0.4F);
+            SoundUtil.playAt(serverWorld, player.getX(), player.getY(), player.getZ(), ModSounds.ICBM_IGNITION, SoundCategory.BLOCKS, 4.0F, 0.8F);
 
-            player.sendMessage(Text.literal("🚀 ICBM launched! Target: (" + targetPos.getX() + ", " + targetPos.getY() + ", " + targetPos.getZ() + ")").formatted(Formatting.GREEN), true);
+            player.getItemCooldownManager().set(this, 60);
+
+            player.sendMessage(Text.literal("🚀 ICBM inbound! Target: (" + targetPos.getX() + ", " + targetPos.getY() + ", " + targetPos.getZ() + ") | Look up at the sky!").formatted(Formatting.GREEN), true);
 
             if (!player.getAbilities().creativeMode) {
                 itemStack.decrement(1);
