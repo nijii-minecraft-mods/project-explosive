@@ -12,9 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.PlantBlock;
+import net.minecraft.entity.FallingBlockEntity;
+import net.minecraft.particle.BlockStateParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -35,20 +39,25 @@ public final class CraterUtil {
         }
 
         // Clamp radius to a safe maximum to prevent server main-thread freeze
-        double safeRadius = Math.min(radius, 32.0);
-        int maxSafeChunks = Math.min(maxChunks, 6);
+        double safeRadius = Math.min(radius, 40.0);
+        int maxSafeChunks = Math.min(maxChunks, 10);
 
         int baseX = MathHelper.floor(cx);
+        int baseY = MathHelper.floor(cy);
         int baseZ = MathHelper.floor(cz);
         int r = MathHelper.ceil(safeRadius);
-        double maxDepth = safeRadius * Math.min(depthRatio, 0.45);
+        double maxDepth = Math.max(3.0, safeRadius * Math.min(depthRatio, 0.65));
         double r2 = safeRadius * safeRadius;
         double invR2 = 1.0 / r2;
         Random rnd = level.getRandom();
 
         Map<BlockPos, BlockState> ejectaCandidateBlocks = new HashMap<>();
+        List<BlockPos> fallingBlockSpawns = new ArrayList<>();
         BlockPos.Mutable mutablePos = new BlockPos.Mutable();
         BlockState air = Blocks.AIR.getDefaultState();
+
+        int maxFlyingBlocks = Math.min(60, (int) (safeRadius * 2.5));
+        int flyingBlocksCount = 0;
 
         for (int dx = -r; dx <= r; dx++) {
             double dxSq = (double) dx * (double) dx;
@@ -67,35 +76,80 @@ public final class CraterUtil {
                 if (!level.isChunkLoaded(wx >> 4, wz >> 4)) {
                     continue;
                 }
-                int colDepth = (int) Math.round(maxDepth * (1.0 - distSq * invR2));
-                if (colDepth < 1) {
-                    continue;
-                }
+
+                // Smooth paraboloid crater bowl depth
+                double normDist = Math.sqrt(distSq) / safeRadius;
+                int colDepth = Math.max(1, (int) Math.round(maxDepth * (1.0 - normDist * normDist)));
 
                 int surfaceY = level.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, wx, wz) - 1;
+                // If explosion happened near/below ground, anchor bottom to cy - colDepth
+                int bottomY = Math.max(level.getBottomY() + 1, Math.min(surfaceY - colDepth, baseY - colDepth));
+                int topY = Math.min(surfaceY, Math.max(baseY + (int) (safeRadius * 0.5), surfaceY));
+
+                // Clear plants directly above surface
                 mutablePos.set(wx, surfaceY + 1, wz);
                 if (level.getBlockState(mutablePos).getBlock() instanceof PlantBlock) {
                     level.setBlockState(mutablePos, air, 18);
                 }
 
-                int bottomY = Math.max(level.getBottomY() + 1, surfaceY - colDepth);
-
-                for (int wy = bottomY; wy <= surfaceY; wy++) {
+                for (int wy = bottomY; wy <= topY; wy++) {
                     mutablePos.set(wx, wy, wz);
                     BlockState state = level.getBlockState(mutablePos);
-                    if (!state.isAir() && !state.isOf(Blocks.BEDROCK)) {
-                        // Keep a fraction of upper blocks as candidates for tumbling physics ejecta
-                        if (wy >= surfaceY - 2 && ejectaCandidateBlocks.size() < 400 && rnd.nextFloat() < 0.4F) {
-                            ejectaCandidateBlocks.put(mutablePos.toImmutable(), state);
-                        }
-                        // Clear crater block directly (flag 18 = notify client, no physics neighbor cascade)
-                        level.setBlockState(mutablePos, air, 18);
+                    if (state.isAir() || state.isOf(Blocks.BEDROCK)) {
+                        continue;
                     }
+
+                    // Check 3D distance from explosion epicenter
+                    double dy = (double) (wy - baseY);
+                    double dist3D = Math.sqrt(distSq + dy * dy);
+
+                    // Ejecta: blocks in outer rim have a chance to fly as physics FallingBlockEntity
+                    if (flyingBlocksCount < maxFlyingBlocks && dist3D >= safeRadius * 0.45 && rnd.nextFloat() < 0.28F) {
+                        fallingBlockSpawns.add(mutablePos.toImmutable());
+                        flyingBlocksCount++;
+                    } else if (wy >= topY - 2 && ejectaCandidateBlocks.size() < 500 && rnd.nextFloat() < 0.4F) {
+                        // MultiBlock boulder cluster candidate
+                        ejectaCandidateBlocks.put(mutablePos.toImmutable(), state);
+                    }
+
+                    // Block break particle burst for realism
+                    if (rnd.nextFloat() < 0.05F) {
+                        level.spawnParticles(
+                                new BlockStateParticleEffect(ParticleTypes.BLOCK, state),
+                                (double) wx + 0.5, (double) wy + 0.5, (double) wz + 0.5,
+                                3, 0.2, 0.2, 0.2, 0.15
+                        );
+                    }
+
+                    // Shred all blocks: dirt, grass, stone, ores, deepslate, sand, gravel, wood, etc.
+                    level.setBlockState(mutablePos, air, 18);
                 }
             }
         }
 
-        // Launch physics debris clusters
+        // 1. Launch dynamic individual FallingBlockEntity debris flying radially outward!
+        for (BlockPos pos : fallingBlockSpawns) {
+            BlockState state = level.getBlockState(pos);
+            // If already cleared, we can spawn from candidate or use dirt/stone
+            BlockState spawnState = !state.isAir() ? state : Blocks.DIRT.getDefaultState();
+            FallingBlockEntity falling = FallingBlockEntity.spawnFromBlock(level, pos, spawnState);
+            if (falling != null) {
+                falling.dropItem = false;
+                double dx = (double) pos.getX() + 0.5 - cx;
+                double dz = (double) pos.getZ() + 0.5 - cz;
+                double dist2D = Math.max(0.5, Math.sqrt(dx * dx + dz * dz));
+                double out = (0.35 + rnd.nextDouble() * 0.75) * forceScale;
+                double up = (0.55 + rnd.nextDouble() * 0.95) * forceScale;
+
+                falling.setVelocity(
+                        (dx / dist2D) * out + (rnd.nextDouble() - 0.5) * 0.2,
+                        up,
+                        (dz / dist2D) * out + (rnd.nextDouble() - 0.5) * 0.2
+                );
+            }
+        }
+
+        // 2. Launch physics MultiBlock debris clusters (large rock/dirt chunks)
         if (!ejectaCandidateBlocks.isEmpty() && maxSafeChunks > 0) {
             Set<BlockPos> remaining = new HashSet<>(ejectaCandidateBlocks.keySet());
             List<BlockPos> seeds = new ArrayList<>(ejectaCandidateBlocks.keySet());
@@ -107,7 +161,7 @@ public final class CraterUtil {
                     break;
                 }
                 if (remaining.contains(seed)) {
-                    int target = 8 + rnd.nextInt(12);
+                    int target = 10 + rnd.nextInt(16);
                     clusters.add(growIrregularCluster(seed, remaining, ejectaCandidateBlocks, target, cx, cz, rnd));
                 }
             }
@@ -189,13 +243,13 @@ public final class CraterUtil {
                 dirZ *= invDl;
             }
 
-            double out = (0.25 + prox * 0.65) * forceScale;
-            double up = (0.55 + prox * 1.1) * forceScale;
+            double out = (0.35 + prox * 0.85) * forceScale;
+            double up = (0.65 + prox * 1.3) * forceScale;
             Random rnd = level.getRandom();
             ent.setVelocity(new Vec3d(
-                    dirX * out + (rnd.nextDouble() - 0.5) * 0.15,
-                    up + rnd.nextDouble() * 0.2,
-                    dirZ * out + (rnd.nextDouble() - 0.5) * 0.15
+                    dirX * out + (rnd.nextDouble() - 0.5) * 0.2,
+                    up + rnd.nextDouble() * 0.25,
+                    dirZ * out + (rnd.nextDouble() - 0.5) * 0.2
             ));
             ent.setNoGravity(false);
             level.spawnEntity(ent);
@@ -208,24 +262,25 @@ public final class CraterUtil {
         return Math.sqrt(dx * dx + dz * dz);
     }
 
-    private static void shuffle(Direction[] a, Random rnd) {
-        for (int i = a.length - 1; i > 0; i--) {
+    private static void shuffle(Direction[] arr, Random rnd) {
+        for (int i = arr.length - 1; i > 0; i--) {
             int j = rnd.nextInt(i + 1);
-            Direction t = a[i];
-            a[i] = a[j];
-            a[j] = t;
+            Direction tmp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = tmp;
         }
     }
 
     private static final class Cluster {
         final Map<BlockPos, BlockState> blocks = new HashMap<>();
-        BlockPos min = null;
+        BlockPos min;
         double minDist = Double.MAX_VALUE;
 
-        void add(BlockPos pos, BlockState state, double dist) {
-            BlockPos p = pos.toImmutable();
-            this.blocks.put(p, state);
-            this.minDist = Math.min(this.minDist, dist);
+        Cluster() {
+        }
+
+        void add(BlockPos p, BlockState s, double d) {
+            this.blocks.put(p, s);
             if (this.min == null) {
                 this.min = p;
             } else {
@@ -234,6 +289,10 @@ public final class CraterUtil {
                         Math.min(this.min.getY(), p.getY()),
                         Math.min(this.min.getZ(), p.getZ())
                 );
+            }
+
+            if (d < this.minDist) {
+                this.minDist = d;
             }
         }
     }

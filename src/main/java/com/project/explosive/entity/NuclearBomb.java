@@ -269,19 +269,22 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
         applyFlashAndBlindness(serverLevel, boomX, boomY, boomZ);
 
         // 2. Spawns hemispherical crater via CraterUtil.digCraterWithEjecta(...)
-        int craterRadius = Math.max(16, (int) (32.0F * this.blastScale));
-        CraterUtil.digCraterWithEjecta(serverLevel, boomX, boomY, boomZ, craterRadius, 0.4, 6, 1.8);
+        int craterRadius = Math.max(20, (int) (36.0F * this.blastScale));
+        CraterUtil.digCraterWithEjecta(serverLevel, boomX, boomY, boomZ, craterRadius, 0.6, 8, 2.0);
 
         // 3. Spawns mushroom cloud via ParticleUtil.spawnMushroomCloud(...)
         ParticleUtil.spawnMushroomCloud(serverLevel, boomX, boomY, boomZ, (double) this.blastScale);
 
         // 4. Applies structural collapse via BlastCrumble.blastAndCrumble(...)
-        BlastCrumble.blastAndCrumble(serverLevel, boomX, boomY, boomZ, 32.0 * (double) this.blastScale);
+        BlastCrumble.blastAndCrumble(serverLevel, boomX, boomY, boomZ, 38.0 * (double) this.blastScale);
 
-        // 5. Spawns radiation field via RadiationManager.addRadiationSource(...)
+        // 5. Massive secondary TNT explosion impulse for block shattering and shockwaves
+        serverLevel.createExplosion(this, boomX, boomY, boomZ, 25.0F * this.blastScale, World.ExplosionSourceType.TNT);
+
+        // 6. Spawns radiation field via RadiationManager.addRadiationSource(...)
         RadiationManager.addRadiationSource(serverLevel, this.originPos, 900.0 * (double) this.blastScale, 24000);
 
-        // 6. Immediate sounds & delayed acoustic sound playback via SoundUtil.playDelayed(...) with ModSounds.NUCLEAR_EXPLOSION and vanilla thunder/explode sounds
+        // 7. Immediate sounds & delayed acoustic sound playback via SoundUtil.playDelayed(...) with ModSounds.NUCLEAR_EXPLOSION and vanilla thunder/explode sounds
         SoundUtil.playAt(serverLevel, boomX, boomY, boomZ, SoundEvents.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.BLOCKS, 6.0F, 1.6F);
         SoundUtil.playAt(serverLevel, boomX, boomY, boomZ, SoundEvents.ENTITY_GENERIC_EXPLODE.value(), SoundCategory.BLOCKS, 8.0F, 0.7F);
         SoundUtil.playAt(serverLevel, boomX, boomY, boomZ, SoundEvents.ENTITY_ENDER_DRAGON_GROWL, SoundCategory.BLOCKS, 7.0F, 0.42F);
@@ -301,10 +304,10 @@ public class NuclearBomb extends ThrownEntity implements PolymerEntity {
         // 7. Shockwave damage to living entities across distance
         applyShockwaveDamage(serverLevel, boomX, boomY, boomZ);
 
-        // Environmental fire and item suppression
+        // Environmental fire and item suppression (confined to core fireball)
         this.setBlocksOnFire(serverLevel);
         this.killNearbyItems(serverLevel);
-        ExplosionItemSuppressor.register(serverLevel, boomX, boomY, boomZ, 400.0, 1200);
+        ExplosionItemSuppressor.register(serverLevel, boomX, boomY, boomZ, 32.0, 200);
         EnvironmentalTransformer.contaminateArea(this.originPos, serverLevel, 80.0 * this.blastScale);
 
         this.shockwaveActive = true;
